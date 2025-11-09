@@ -1,0 +1,45 @@
+# Pick And Place List
+# eMail=
+#
+# Project=weatherlox-esp-pcb
+# Date=09:53:42
+# CreatedBy=Fritzing 1.0.6.2025-10-07.CD-2239-0-04e5bb02
+#
+# Coordinates in mils, always center of component
+# Origin 0/0=Lower left corner of PCB. Rotation in degree (0-360, math. pos.)
+RefDes,Description,Package,X,Y,Rotation,Side,Mount
+Description: resistance;capacitance;inductance;voltage;current;power;mpn;mn;
+Via1,";;;;;;;;","",1356,50.8071,0,Top,MANUAL
+Via14,";;;;;;;;","",1068,626.804,0,Top,MANUAL
+Via13,";;;;;;;;","",1428,266.807,0,Top,MANUAL
+ADS1115,";;;;;;;;","",734.906,1204.58,0,Top,MANUAL
+Via6,";;;;;;;;","",923.999,1274.8,0,Top,MANUAL
+Via8,";;;;;;;;","",1956,266.807,0,Top,MANUAL
+Via3,";;;;;;;;","",2196,314.807,0,Top,MANUAL
+Via9,";;;;;;;;","",2004,674.804,0,Top,MANUAL
+Via2,";;;;;;;;","",2364,314.807,0,Top,MANUAL
+Via5,";;;;;;;;","",1332,1370.8,0,Top,MANUAL
+Via12,";;;;;;;;","",1932,794.804,0,Top,MANUAL
+Via7,";;;;;;;;","",2652,242.807,0,Top,MANUAL
+Via4,";;;;;;;;","",2940,242.807,0,Top,MANUAL
+Via11,";;;;;;;;","",2748,554.804,0,Top,MANUAL
+ESP32-DevKitC v4,";;;;;;;;","",2426.73,973.165,90,Top,MANUAL
+Via10,";;;;;;;;","",2916,674.804,0,Top,MANUAL
++12V,";;;;;;;;","THT",418.9,151.536,-90,Top,THT
+GND,";;;;;;;;","THT",713.993,148.492,-90,Top,THT
+MP1584EN,";;;;;;;;","THT",557.519,371.6,0,Top,THT
+Temp1,";;;;;;;;","THT",1209.62,148.414,-90,Top,THT
+Temp2,";;;;;;;;","THT",1503.22,148.825,-90,Top,THT
+RainA,";;;;;;;;","THT",1800.82,148.67,-90,Top,THT
+Wind2,";;;;;;;;","THT",586.406,1431.05,90,Top,THT
+Wind1,";;;;;;;;","THT",846.467,1431.92,90,Top,THT
+RainT,";;;;;;;;","THT",2140.49,150.714,-90,Top,THT
+R3,"1.5k;;;;;0.25W;;;","THT",1497.41,925.876,90,Top,THT
+R4,"2.2k;;;;;0.25W;;;","THT",1616.92,925.12,90,Top,THT
+Light1,";;;;;;;;","THT",2493.31,148.214,-90,Top,THT
+R5,"1.5k;;;;;0.25W;;;","THT",1734.07,925.584,90,Top,THT
+R6,"2.2k;;;;;0.25W;;;","THT",1849.49,927.952,90,Top,THT
+Light2,";;;;;;;;","THT",2797.47,147.492,-90,Top,THT
+Light3,";;;;;;;;","THT",3119.41,146.948,-90,Top,THT
+R1,"10k;;;;;0.25W;;;","THT",2035.33,1283.9,180,Top,THT
+R2,"10k;;;;;0.25W;;;","THT",2626.29,1282.87,0,Top,THT

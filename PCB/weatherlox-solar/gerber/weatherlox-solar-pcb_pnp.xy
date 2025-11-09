@@ -1,0 +1,28 @@
+# Pick And Place List
+# eMail=
+#
+# Project=weatherlox-solar-pcb
+# Date=11:42:52
+# CreatedBy=Fritzing 1.0.6.2025-10-07.CD-2239-0-04e5bb02
+#
+# Coordinates in mils, always center of component
+# Origin 0/0=Lower left corner of PCB. Rotation in degree (0-360, math. pos.)
+RefDes,Description,Package,X,Y,Rotation,Side,Mount
+Description: resistance;capacitance;inductance;voltage;current;power;mpn;mn;
+GUVA-S12SD,";;;;;;;;","",443.064,640.882,-90,Top,MANUAL
+VEML7700,";;;;;;;;","",1033.43,392.8,0,Top,MANUAL
+Via2,";;;;;;;;","",1092,386.801,0,Top,MANUAL
+Via3,";;;;;;;;","",1332,434.803,0,Top,MANUAL
+Via4,";;;;;;;;","",1548,362.801,0,Top,MANUAL
+Via6,";;;;;;;;","",1740,1010.8,0,Top,MANUAL
+INS219,";;;;;;;;","",1816.55,1044.98,90,Top,MANUAL
+Via7,";;;;;;;;","",2196,1034.8,0,Top,MANUAL
+Via5,";;;;;;;;","",2004,1394.8,0,Top,MANUAL
+Via1,";;;;;;;;","",2340,1394.8,0,Top,MANUAL
+Mod1,";;;;;;;;","Breakout board",1032.9,1146.15,180,Top,SMT
+C1,";100nF;;35V;;;;;","100 mil [THT, electrolytic]",1498.2,211.63,0,Top,THT
+Light1,";;;;;;;;","THT",1867.88,160.03,-90,Top,THT
+Light2,";;;;;;;;","THT",2185.26,160.275,-90,Top,THT
+Light3,";;;;;;;;","THT",2549.64,160.063,-90,Top,THT
+S+S-,";;;;;;;;","THT",2914.14,159.119,-90,Top,THT
+GY-AS3935,";;;;;;;;","THT",2872.75,1479.78,-90,Top,THT
