@@ -5,6 +5,8 @@ This PCB is for the ESP32 and the additional Analog-Digital converter ADS1115 an
 
 ![PCB for ESP32 TOP](./pictures/top.svg)
 
+<img src="./pictures/top.svg" width="200%">
+
 ![PCB for ESP32 Bottom](./pictures/bottom.svg)
 
 The breadboard looks like this:
