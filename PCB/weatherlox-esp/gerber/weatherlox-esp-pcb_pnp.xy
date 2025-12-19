@@ -1,50 +1,63 @@
 # Pick And Place List
-# Company=
-# Author=
 # eMail=
 #
 # Project=weatherlox-esp-pcb
-# Date=11:39:39
-# CreatedBy=Fritzing 1.0.4.2024-10-07.CD-2088-0-a8c6ef7c
-#
+# Date=06:24:14
+# CreatedBy=Fritzing 1.0.6.2025-10-07.CD-2239-0-04e5bb02
 #
 # Coordinates in mils, always center of component
-# Origin 0/0=Lower left corner of PCB
-# Rotation in degree (0-360, math. pos.)
-#
+# Origin 0/0=Lower left corner of PCB. Rotation in degree (0-360, math. pos.)
 RefDes,Description,Package,X,Y,Rotation,Side,Mount
 Description: resistance;capacitance;inductance;voltage;current;power;mpn;mn;
-Via1,";;;;;;;;","",1356,50.8071,0,Top,MANUAL
-R6,"2.2k;;;;;0.25W;;;","THT",1849.49,927.952,90,Top,THT
-Via5,";;;;;;;;","",1332,1370.8,0,Top,MANUAL
-RainA,";;;;;;;;","THT",1800.82,148.67,-90,Top,THT
-R1,"10k;;;;;0.25W;;;","THT",2035.33,1283.9,180,Top,THT
-Temp2,";;;;;;;;","THT",1503.22,148.825,-90,Top,THT
-RainT,";;;;;;;;","THT",2140.49,150.714,-90,Top,THT
-Via11,";;;;;;;;","",2748,554.804,0,Top,MANUAL
-Temp1,";;;;;;;;","THT",1209.62,148.414,-90,Top,THT
-Via4,";;;;;;;;","",2940,242.807,0,Top,MANUAL
-Via12,";;;;;;;;","",1932,794.804,0,Top,MANUAL
-R5,"1.5k;;;;;0.25W;;;","THT",1734.07,925.584,90,Top,THT
-Via14,";;;;;;;;","",1068,626.804,0,Top,MANUAL
-Via13,";;;;;;;;","",1428,266.807,0,Top,MANUAL
-Via8,";;;;;;;;","",1956,266.807,0,Top,MANUAL
-GND,";;;;;;;;","THT",713.993,148.492,-90,Top,THT
-Via2,";;;;;;;;","",2364,314.807,0,Top,MANUAL
-Via9,";;;;;;;;","",2004,674.804,0,Top,MANUAL
-Light1,";;;;;;;;","THT",2493.31,148.214,-90,Top,THT
-+12V,";;;;;;;;","THT",418.9,151.536,-90,Top,THT
-ADS1115,";;;;;;;;","",734.906,1204.58,0,Top,MANUAL
-Via3,";;;;;;;;","",2196,314.807,0,Top,MANUAL
-Via10,";;;;;;;;","",2916,674.804,0,Top,MANUAL
-R3,"1.5k;;;;;0.25W;;;","THT",1497.41,925.876,90,Top,THT
-Light2,";;;;;;;;","THT",2797.47,147.492,-90,Top,THT
-Light3,";;;;;;;;","THT",3119.41,146.948,-90,Top,THT
-Wind2,";;;;;;;;","THT",586.406,1431.05,90,Top,THT
-Wind1,";;;;;;;;","THT",846.467,1431.92,90,Top,THT
-R2,"10k;;;;;0.25W;;;","THT",2626.29,1282.87,0,Top,THT
-Via6,";;;;;;;;","",923.999,1274.8,0,Top,MANUAL
-R4,"2.2k;;;;;0.25W;;;","THT",1616.92,925.12,90,Top,THT
-ESP32-DevKitC v4,";;;;;;;;","",2426.73,973.165,90,Top,MANUAL
-MP1584EN,";;;;;;;;","THT",557.519,371.6,0,Top,THT
-Via7,";;;;;;;;","",2652,242.807,0,Top,MANUAL
+Via9,";;;;;;;;","",1188,74.8071,0,Top,MANUAL
+Via6,";;;;;;;;","",707.999,578.804,0,Top,MANUAL
+Via12,";;;;;;;;","",707.999,674.804,0,Top,MANUAL
+Via18,";;;;;;;;","",273.584,1528.82,0,Top,MANUAL
+Via8,";;;;;;;;","",1524,338.807,0,Top,MANUAL
+Bauteil1,";;;;;;;;","",904.602,1200.49,0,Top,MANUAL
+Via1,";;;;;;;;","",1740,386.807,0,Top,MANUAL
+Via2,";;;;;;;;","",1476,1226.8,0,Top,MANUAL
+Via23,";;;;;;;;","",2893.91,351.307,0,Top,MANUAL
+A1,";;;;;;;;","",2665.39,987.924,90,Top,MANUAL
+Via24,";;;;;;;;","",3486.25,175.751,0,Top,MANUAL
+Via13,";;;;;;;;","",2916,746.804,0,Top,MANUAL
+Via7,";;;;;;;;","",2412,1274.8,0,Top,MANUAL
+Via20,";;;;;;;;","",3586.99,102.207,0,Top,MANUAL
+Via3,";;;;;;;;","",2916,818.804,0,Top,MANUAL
+Via11,";;;;;;;;","",2772,1082.8,0,Top,MANUAL
+Via17,";;;;;;;;","",3623.67,234.451,0,Top,MANUAL
+Via22,";;;;;;;;","",3548.89,351.307,0,Top,MANUAL
+Via19,";;;;;;;;","",3907.32,89.9848,0,Top,MANUAL
+Via5,";;;;;;;;","",3852,146.807,0,Top,MANUAL
+Via16,";;;;;;;;","",3622.6,399.851,0,Top,MANUAL
+Via10,";;;;;;;;","",3060,1082.8,0,Top,MANUAL
+Via4,";;;;;;;;","",3252,1154.8,0,Top,MANUAL
+Via15,";;;;;;;;","",3517.2,1355.63,0,Top,MANUAL
+Via14,";;;;;;;;","",3584.31,1495.11,0,Top,MANUAL
++12V,";;;;;;;;","THT",377.247,166.981,90,Top,THT
+GND,";;;;;;;;","THT",626.727,160.859,90,Top,THT
+U1,";;;;;;;;","THT",480.318,360.034,0,Top,THT
+3 4,";;;;;;;WindS;","THT",156.019,1070.5,180,Top,THT
+1 2,";;;;;;;Air;","THT",1123.47,161.803,90,Top,THT
+1 2,";;;;;;;WindS;","THT",156.562,1313.72,180,Top,THT
+3 4,";;;;;;;Air;","THT",1377.52,162.259,90,Top,THT
++ -,";;;;;;;3.3V;","THT",1630.66,161.336,90,Top,THT
+SDA SCL,";;;;;;;;","THT",1883.54,159.981,90,Top,THT
+3 4,";;;;;;;WindD;","THT",748.351,1422.31,-90,Top,THT
+1 2,";;;;;;;Light;","THT",2138.17,159.37,90,Top,THT
+1 2,";;;;;;;WindD;","THT",991.029,1423.11,-90,Top,THT
+R5,"1.5k;;;;;0.25W;;;","THT",1398.72,1083.27,0,Top,THT
+3 4,";;;;;;;Light;","THT",2393.27,159.103,90,Top,THT
+R4,"1.5k;;;;;0.25W;;;","THT",1405.63,1206.15,0,Top,THT
+5 6 7,";;;;;;;Light;","THT",2698.06,160.348,90,Top,THT
+R6,"2.2k;;;;;0.25W;;;","THT",1809.06,1076.85,90,Top,THT
+R7,"2.2k;;;;;0.25W;;;","THT",1959.41,1080.89,90,Top,THT
+R3,"4.7k;;;;;0.25W;;;","THT",2464.94,707.978,0,Top,THT
++ - I,";;;;;;;Relais;","THT",3053.06,160.814,90,Top,THT
+COM ON,";;;;;;;Relais;","THT",3357.34,160.759,90,Top,THT
+R1,"10k;;;;;0.25W;;;","THT",2349.12,1276.43,180,Top,THT
++ - D,";;;;;;;1-Wire;","THT",3781.03,207.436,0,Top,THT
+R2,"10k;;;;;0.25W;;;","THT",2971.29,1275.82,0,Top,THT
+1 2,";;;;;;;RainA;","THT",3782.61,500.401,0,Top,THT
++ -,";;;;;;;Heat;","THT",3777.54,1092.05,0,Top,THT
+1 2 3,";;;;;;;RainS;","THT",3777.54,1387.9,0,Top,THT

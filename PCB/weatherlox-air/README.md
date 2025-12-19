@@ -9,4 +9,4 @@ This PCB is for the temperature, humidity and air pressur sensor.
 
 The breadboard looks like this:
 
-![Breadboard for ESP32 Bottom](./pictures/weatherlox-temp-pcb_Steckplatine.png)
+![Breadboard for ESP32 Bottom](./pictures/weatherlox-air-pcb_Steckplatine.png)

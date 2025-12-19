@@ -1,0 +1,16 @@
+# Pick And Place List
+# eMail=
+#
+# Project=weatherlox-temp-pcb
+# Date=06:56:42
+# CreatedBy=Fritzing 1.0.6.2025-10-07.CD-2239-0-04e5bb02
+#
+# Coordinates in mils, always center of component
+# Origin 0/0=Lower left corner of PCB. Rotation in degree (0-360, math. pos.)
+RefDes,Description,Package,X,Y,Rotation,Side,Mount
+Description: resistance;capacitance;inductance;voltage;current;power;mpn;mn;
+BME280,";;;;;;;;","",481.21,574.849,0,Top,MANUAL
+1 2,";;;;;;;Air;","THT",373.643,156.117,90,Top,THT
+3 4,";;;;;;;Air;","THT",620.163,156.526,90,Top,THT
+SDA SCL,";;;;;;;I2C;","THT",362.739,1032.66,-90,Top,THT
++ -,";;;;;;;3.3V;","THT",609.428,1032.64,-90,Top,THT
