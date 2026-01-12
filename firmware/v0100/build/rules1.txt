@@ -1,0 +1,240 @@
+// V1.0.0 - 12.01.2026
+
+On System#Boot Do
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Set some important variables manually
+  //
+  // Set station height over ground - leave to 0 for automatic
+  Let,stationheight,0
+  //
+  // Set Coefficients for calculating sun duration!
+  // Note: Explanation: https://github.com/Jterrettaz/sunduration
+  // Note: globcoeff 0.92 for germany. Too little sunshine recorded: decrease value; too much sunshine recorded: increase value)
+  // Note: bcoeff 0.65 default value
+  Let,globcoeff,0.92
+  Let,bcoeff,0.06
+  //
+  // Volume of the rainamount bucket in mm
+  Let,rainbucket,0.2
+  //
+  // Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (vor restoring after powerloss)
+  Let,savesumvalues,1
+  //
+  // Get some values from OpenMeteo we cannot measure by ourselves
+  Let,getopenmeteo,1
+  //
+  // No changes beyond this line!
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  // Some default vars
+  LetStr,ecowittstationtype,"WeatherLox"
+  LetStr,ecowittmodel,"WEATHERLOX_V1.0"
+  LetStr,ecowittmac,{urlencode:"%mac%"}
+  Let,rainratelast,0
+  
+  // Now we're enabling tasks for I2C sensors as they may have been disabled when not found
+  TaskEnable,ads1115_1
+  TaskEnable,veml7700_1
+  TaskEnable,ina219_1
+  TaskEnable,bme280_1
+  TaskEnable,as3935_1
+Endon
+
+on WiFi#Connected Do
+  // Restore sum values from weatherlox webserver, currently there's no option in ESPEasy to save values
+  If %v_savesumvalues%>1
+    SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+  EndIf
+  // Start Timer for some quarterly tasks / events
+  LoopTimerSetAndRun,1,900
+  // Start Timer for some 5 seconds tasks / events
+  LoopTimerSetAndRun,2,5
+  // Start Timer for some 5 minutes tasks / events
+  LoopTimerSetAndRun,3,300
+  // Get station height from Open Meteo if not set here in the rules manually
+  If %v_stationheight%=0
+    SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
+  Endif
+  // Get passkey for Ecowitt Format for our mac address if enabled - ESPEasy cannot calculate MD5 checksums
+  If [data_1#settings.controller3.enabled]>0
+    SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
+  Endif
+Endon
+
+// 5sec Tasks / Events
+On Rules#Timer=2 Do
+  // Resetting Rainrate if no pulse the last 600s
+  If %unixtime% > (%v_rainratelast%+600) And [data_9#rainstate] = 0
+      TaskValueSet data_4,rainrate,0
+  Endif
+  // Resetting Rain Event
+  If %unixtime% > (%v_rainratelast%+3600) And [data_9#rainstate] = 0
+    TaskValueSet data_6,rain_event,0
+  Endif
+  // Prepare and send data for Ecowitt if enabled
+  If [data_1#settings.controller3.enabled]>0
+    LetStr,ecowittdateutc,"{urlencode:"%c_ts2date%(%unixtime%+%systzoffset_s%)"}"
+    Let,ecowitttempf,%c_c2f%([bme280_1#temperature])
+    Let,ecowittbaromabsin,[bme280_1#pressure_abs]*0.02953
+    Let,ecowittbaromrelin,[data_9#pressure_rel]*0.02953
+    Let,ecowittrainratein,[data_4#rainrate]/25.4
+    Let,ecowitteventrainin,[data_6#rain_event]/25.4
+    Let,ecowitthourlyrainin,[data_6#rain_hourly]/25.4
+    Let,ecowittdailyrainin,[data_13#rain_daily]/25.4
+    Let,ecowittweeklyrainin,[data_13#rain_weekly]/25.4
+    Let,ecowittmonthlyrainin,[data_6#rain_monthly]/25.4
+    Let,ecowittyearlyrainin,[data_6#rain_yearly]/25.4
+    Let,ecowittwindspeedmph,[data_10#windspeed]*0.621371
+    Let,ecowittwindgustmph,[data_10#windgust_max2m]*0.621371
+    Let,ecowittwindspdmph_avg2m,[data_10#windspeed_avg2m]*0.621371
+    LetStr,ecowittblock1,"mac=[str#ecowittmac]&PASSKEY=[str#ecowittpasskey]&dateutc=[str#ecowittdateutc]&stationtype=[str#ecowittstationtype]&model=[str#ecowittmodel]&"
+    LetStr,ecowittblock2,"twilight=[data_1#twilight]&brightness=[data_1#illuminance]&uv=[data_1#uvi]&solarradiation=[data_1#solarradiation]&"
+    LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[bme280_1#humidity]&"
+    LetStr,ecowittblock4,"srain_piezo=[data_9#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
+    LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
+    LetStr,ecowittblock6,"lightning_time=[data_12#lightning_time]&lightning_num=[data_12#lightning_count]&lightning=[data_12#lightning]&"
+    LetStr,ecowittblock7,"winddir=[data_11#winddir]&winddir_avg2m=[data_11#winddir_avg2m]&winddir_avg10m=[data_11#winddir_avg_10m]&"
+    LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&" 
+  Endif
+Endon
+
+// Minutely Tasks / Events
+On Clock#Time=All,**:** Do
+  // Caluclate pressure trends
+  // See: https://www.nxp.com/docs/en/application-note/AN3914.pdf
+  TaskValueSet internal_2,int_random,%c_random%(0, 1) // Force the Statistics to be updated
+  TaskValueSetAndRun internal_2,int_pressure,[bme280_1#pressure_abs.avg60]
+  If [internal_2#int_pressure.sample]>59
+    TaskValueSet data_8,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample60]
+    If [data_8#pressurechange1]>0.7
+      TaskValueSet data_9,pressuretrend1,2
+    Elseif [data_8#pressurechange1]>0.2
+      TaskValueSet data_9,pressuretrend1,1
+    Elseif [data_8#pressurechange1]<0.7
+      TaskValueSet data_9,pressuretrend1,-2
+    Elseif [data_8#pressurechange1]<0.2
+      TaskValueSet data_9,pressuretrend1,-1
+    Else
+      TaskValueSet data_9,pressuretrend1,0
+    Endif
+  Endif
+  If [internal_2#int_pressure.sample]>179
+    TaskValueSet data_8,pressurechange3,[internal_2#int_pressure]-[internal_2#int_pressure.sample180]
+    If [data_8#pressurechange3]>2
+      TaskValueSet data_9,pressuretrend3,2
+    Elseif [data_8#pressurechange3]>0.7
+      TaskValueSet data_9,pressuretrend3,1
+    Elseif [data_8#pressurechange3]<2
+      TaskValueSet data_9,pressuretrend3,-2
+    Elseif [data_8#pressurechange3]<0.7
+      TaskValueSet data_9,pressuretrend3,-1
+    Else
+      TaskValueSet data_9,pressuretrend3,0
+    Endif
+  Endif
+  // Calculate Threashold for sunshine and sunshine duration according giving geocordinates
+  // See: https://github.com/Jterrettaz/sunduration
+  // See: http://meteo-sciez.fr/O1_07_Vuerich_Sunshine_Duration.pdf
+  // See: https://library.wmo.int/viewer/68695/?offset=#page=344&viewer=picture&o=bookmark&n=0&q=
+  If %latitude% > 0 And %longitude% > 0
+    Let,dayofyear,round((%unixtime%/86400)-((%sysyear%-1970)*365+(%sysyear%-1970)/4))
+    Let,thetasd,360*%v_dayofyear%/365
+    Let,thetasdrad,(3.14159265359/180)*%v_thetasd%
+    Let,equatemps1,0.0172+0.4281*(cos(%v_thetasdrad%))
+    Let,equatemps2,-7.3515*(sin(%v_thetasdrad%))-3.3495*(cos(2*%v_thetasdrad%))
+    Let,equatemps,%v_equatemps1%+%v_equatemps2%-9.3619*(sin(2*%v_thetasdrad%))
+    Let,corrtemps,%longitude%*4
+    Let,declinaison1,0.006918-0.399912*(cos(%v_thetasdrad%))+0.070257*(sin(%v_thetasdrad%))
+    Let,declinaison2,-0.006758*(cos(2*%v_thetasdrad%))+0.000908*(sin(2*%v_thetasdrad%))
+    Let,declinaison,(asin(%v_declinaison1%+(%v_declinaison2%)))*(180/3.14159265359)
+    Let,minutesjour,%syshour%*60+%sysmin%-(%systzoffset_s%/60)
+    Let,tempsolaire,(%v_minutesjour%+%v_corrtemps%+%v_equatemps%)/60
+    Let,anglehoraire,(%v_tempsolaire%-12)*15
+    Let,hauteursoleil1,(sin((3.14159265359/180)*%latitude%))*(sin((3.14159265359/180)*%v_declinaison%))
+    Let,hauteursoleil2,(cos((3.14159265359/180)*%latitude%))*(cos((3.14159265359/180)*%v_declinaison%))*(cos((3.14159265359/180)*%v_anglehoraire%))
+    Let,hauteursoleil,(asin(%v_hauteursoleil1%+%v_hauteursoleil2%))*(180/3.14159265359)
+    TaskValueSet data_5,sunelevation,%v_hauteursoleil%
+    Let,sundirection1,-1*(sin((3.14159265359/180)*%v_anglehoraire%))
+    Let,sundirection2,((tan((3.14159265359/180)*%v_declinaison%))*(cos((3.14159265359/180)*%latitude%)))-((sin((3.14159265359/180)*%latitude%))*(cos((3.14159265359/180)*%v_anglehoraire%)))
+    Let,sundirection,(atan(%v_sundirection1%/%v_sundirection2%))*(180/3.14159265359)
+    If %v_sundirection2% < 0 // Quadrantenkorrektur, because atan2 does not exist in ESPEasy
+      Let,sundirection,%v_sundirection%+180
+    Endif
+    TaskValueSet data_2,sundirection,((%v_sundirection%*100+36000)%36000)/100 // Convert to positive value via modulo (factor 100 to get 3 digits)
+    If %v_hauteursoleil% > 3
+      Let seuil1,0.73+%v_bcoeff%*(cos((3.14159265359/180)*360*%v_dayofyear%/365))
+      Let seuil2,(sin((3.14159265359/180)*%v_hauteursoleil%))^1.25
+      Let,seuil,%v_seuil1%*1080*%v_seuil2%*%v_globcoeff%
+    Else
+      Let,seuil,0
+    Endif
+  Else
+    Let,seuil,120
+  Endif
+Endon
+
+// 5min Tasks / Events
+On Rules#Timer=3 Do
+ // Try to enabling tasks for I2C sensors again in case they were lost
+  TaskEnable,ads1115_1
+  TaskEnable,veml7700_1
+  TaskEnable,ina219_1
+  TaskEnable,bme280_1
+  TaskEnable,as3935_1
+  // Save sum values to weatherlox webserver to save them for a power loss, currently there's no option in ESPEasy to save values
+  If %v_savesumvalues%>1
+    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_2#solarradiation_daily]&sunduration_daily=[data_2#sunduration_daily]&windgust_maxdaily=[data_13#windgust_maxdaily]&windrun_daily=[data_13#windrun_daily]&rain_daily=[data_13#rain_daily]&rain_weekly=[data_13#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]"
+  Endif
+Endon
+
+// Quarterly Tasks / Events
+On Rules#Timer=1 Do
+  // Get weather data from Open Meteo and calculating pressure trends if enabled
+  If %v_getopenmeteo%>1
+    SendToHTTP,api.open-meteo.com,80,"v1/forecast?latitude=%latitude%&longitude=%longitude%&current=precipitation_probability,visibility,evapotranspiration,et0_fao_evapotranspiration,weather_code,cloud_cover"
+  Endif
+Endon
+
+// Hourly Tasks / Events
+On Clock#Time=All,**:00 Do
+  TaskValueSet data_6,rain_hourly,0
+Endon
+
+// Daily Tasks / Events
+On Clock#Time=All,00:00 Do
+  TaskValueSet data_2,solarradiation_daily,0
+  TaskValueSet data_2,sunduration_daily,0
+  TaskValueSet data_13,windgust_maxdaily,0
+  TaskValueSet data_13,windrun_daily,0
+  TaskValueSet data_13,rain_daily,0
+  If %sysweekday%=2 // Weekly
+    TaskValueSet data_13,rain_weekly,0
+  Endif
+  If %sysday%=1 // Monthly
+    TaskValueSet data_6,rain_monthly,0
+  Endif
+  If %sysday%=1 And %sysmonth%=1 // Yearly
+    TaskValueSet data_6,rain_yearly,0
+  Endif
+Endon
+
+// Parse data from Open Meteo
+On OpenMeteo#current Do
+    TaskValueSet data_3,precipitationprob,%eventvalue1%
+    TaskValueSet data_3,visibility,%eventvalue2%/1000
+    TaskValueSet data_3,evapotranspiration,%eventvalue3%
+    TaskValueSet data_3,et0evapotranspiration,%eventvalue4%
+    TaskValueSet data_4,weathercode,%eventvalue5% // https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM
+    TaskValueSet data_4,cloudcover,%eventvalue6%
+Endon
+
+// Parse data from JSON sources
+On JsonReply* Do
+  If %eventpar% = 1 // Station height for pressure calculations
+    Let,stationheight,%eventvalue1%
+  Elseif %eventpar% = 2 // Passkey for Ecowitt
+    LetStr,ecowittpasskey,%eventvalue1%
+  Elseif %eventpar% = 3 // Get saved data from server
+    //LetStr,passkey,%eventvalue1%
+  Endif
+Endon

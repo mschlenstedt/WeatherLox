@@ -1,0 +1,60 @@
+// V1.0.0 - 12.01.2026
+
+// Calculate Twilight, UVI, Windspeed, Windidr, Windgust, Windrun, Beaufort
+On ads1115_1#All Do
+  // Twilight
+  Let,twilight,%eventvalue1%/0.0325 // /3.25*100
+  TaskValueSet data_1,twilight,{constrain:%v_twilight%:0:100} // 3.3V (real: 3.25V) is absolute darkness = 100%
+  
+  // UVI
+  TaskValueSet data_1,uvi,%eventvalue2%/0.1 // 1V = UVI 10. Steps in 0.1V
+  
+  // Wind Measures - Save
+  TaskValueSet internal_1,int_random,%c_random%(0, 1) // Force the Statistics to be updated
+  TaskValueSet internal_1,int_windspeed,mapc(%eventvalue3%:0.005:2.990:0:60)*3.6 // 2.99V maximum, 60 m/s
+  TaskValueSet data_10,windspeed,[internal_1#int_windspeed]
+  TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.809:0:315) // For 8-Point-Sensor
+  //TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.99:0:359) // For 0-360° Sensor
+  TaskValueSet internal_1,int_winddir_x,cos_d([data_11#winddir])
+  TaskValueSet internal_1,int_winddir_y,sin_d([data_11#winddir]) // ....and Run to Save the stats
+  TaskRun internal_1
+  // Wind Speed AVG and Max
+  TaskValueSet data_10,windspeed_avg2m,[internal_1#int_windspeed.avg24]  // Average of windspeed - every 5 sec a value. 2 Min AVG
+  TaskValueSet data_10,windspeed_avg10m,[internal_1#int_windspeed.avg120] // Average of windspeed - every 5 sec a value. 10 Min AVG
+  TaskValueSet data_10,windgust_max2m,[internal_1#int_windspeed.max24] // Max of windspeed - every 5 sec a value. 2 Min MAX
+  TaskValueSet data_12,windgust_max10m,[internal_1#int_windspeed.max120]  // Max of windspeed - every 5 sec a value. 10 Min MAX
+  TaskValueSet data_5,beaufort,%c_ms2Bft%([data_10#windspeed_avg2m]/3.6)
+  If [data_10#windspeed]>[data_13#windgust_maxdaily] // Setting daily maximum
+    TaskValueSetAndRun data_13,windgust_maxdaily,[data_10#windspeed]
+  Endif
+  TaskValueSet data_13,windrun_daily,[data_13#windrun_daily]+([internal_1#int_windspeed]/3.6*5) // Windrun in m, every 5 sec a value
+  // Winddirection AVG
+  Let,x_winddir_avg2m,[internal_1#int_winddir_x.avg24] // Average of the vector components - every 5 sec a value. 2 Min AVG
+  Let,y_winddir_avg2m,[internal_1#int_winddir_y.avg24]
+  Let,x_winddir_avg10m,[internal_1#int_winddir_x.avg120] // Average of the vector components - every 5 sec a value. 10 Min AVG
+  Let,y_winddir_avg10m,[internal_1#int_winddir_y.avg120]
+  If %v_x_winddir_avg2m%>0 // Quadrantenkorrektur for avg_2m, because atan2 does not exist in ESPEasy
+    Let,theta_avg2m,atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%)
+  Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%>= 0
+    Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))+3.14159265359
+  Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%<0
+    Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))-3.14159265359
+  Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%>0
+    Let,theta_avg2m,3.14159265359/2
+  Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%<0
+    Let,theta_avg2m,-3.14159265359/2
+  Endif
+  If %v_x_winddir_avg10m%>0 // Quadrantenkorrektur for avg_10m, because atan2 does not exist in ESPEasy
+    Let,theta_avg10m,atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%)
+  Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%>=0
+    Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))+3.14159265359
+  Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%<0
+    Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))-3.14159265359
+  Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%>0
+    Let,theta_avg10m,3.14159265359/2
+  Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%<0
+    Let,theta_avg10m,-3.14159265359/2
+  Endif
+  TaskValueSet data_11,winddir_avg2m,((%v_theta_avg2m%*180/3.14159265359)+360)%360 // Convert to degrees and positive value via modulo
+  TaskValueSet data_11,winddir_avg10m,((%v_theta_avg10m%*180/3.14159265359)+360)%360 // Convert to degrees and positive value via modulo
+Endon

@@ -1,0 +1,25 @@
+// V1.0.0 - 12.01.2026
+
+// Caluclate rainrate
+On input_1#All Do
+  If %eventvalue1%=1
+    TaskValueSet data_13,rain_daily,[data_13#rain_daily]+%v_rainbucket% // %v_rainbucket% mm per Pulse
+    TaskValueSet data_13,rain_weekly,[data_13#rain_weekly]+%v_rainbucket%
+    TaskValueSet data_6,rain_monthly,[data_6#rain_monthly]+%v_rainbucket%
+    TaskValueSet data_6,rain_yearly,[data_6#rain_yearly]+%v_rainbucket%
+    TaskValueSet data_6,rain_hourly,[data_6#rain_hourly]+%v_rainbucket%
+    TaskValueSet data_6,rain_event,[data_6#rain_event]+%v_rainbucket%
+    If %unixtime%<(%v_rainratelast%+600)
+      TaskValueSet data_4,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600 // %v_rainbucket% mm per Pulse, converted to mm/h
+    Endif
+    Let,rainratelast,%unixtime%
+  Endif
+Endon
+
+// Calculate rain status (and rainrate < 1 mm/h)
+On input_2#All Do
+  TaskValueSet data_9,rainstate,%eventvalue1%
+  If %eventvalue1%=1 And [data_4#rainrate]=0 // If we detect rain here but the bucket counter is still zero, set 0.5 mm/h here (minimum of bucket counter is 1.2 mm/h)
+    TaskValueSet data_4,rainrate,0.5
+  Endif
+Endon

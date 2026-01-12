@@ -1,0 +1,68 @@
+// V1.0.0 - 12.01.2026
+
+// Calculate Temperature, Humdity rel/abs, Pressure, Dewpoint, Windchill, Heat Index, Feelslike
+On bme280_1#All Do
+  TaskValueSet data_5,humidity_abs,(%eventvalue2%/100)*(5.018+(0.32321*%eventvalue1%)+(0.0081847*%eventvalue1%^2)+(0.00031243**%eventvalue1%^3))
+  TaskValueSet data_4,vapourpressuredeficit,(0.6108*exp((17.27*%eventvalue1%)/(%eventvalue1%+237.3)))-((0.6108*exp((17.27*%eventvalue1%)/(%eventvalue1%+237.3)))*(%eventvalue2%/100))
+  TaskValueSet data_7,dewpoint,%c_dew_th%(%eventvalue1%,%eventvalue2%)
+  // Height of Cloud Base, Henningschen Formel, see https://www.dwd.de/DE/leistungen/pbfb_verlag_vub/pdf_einzelbaende/vub_16_gesamt_pdf.pdf?__blob=publicationFile&v=5
+  TaskValueSet data_2,cloudbase,(%eventvalue1%-[data_7#dewpoint])*125
+  // Sea Level pressure (rel): // Formula from http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf, Page 17
+  If %v_stationheight%>0
+    TaskValueSet data_9,pressure_rel,%c_sea_pres_alt%(%eventvalue3%,%v_stationheight%)
+  Else
+    TaskValueSet data_9,pressure_rel,%eventvalue3%
+  Endif
+  // Windchill, https://www.windinfo.eu/windchill/
+  If %eventvalue1%<10 And [data_10#windspeed_avg2m]>5 // Temp lower 10 and Wind higher 5
+    TaskValueSet data_7,windchill,13.12+(0.6215*%eventvalue1%)-(11.37*[data_10#windspeed_avg2m]^0.16)+(0.3965*%eventvalue1%*[data_10#windspeed_avg2m^,0.16)
+  Else
+    TaskValueSet data_7,windchill,%eventvalue1%
+  Endif
+  // Heat Index, https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
+  If %c_c2f%(%eventvalue1%)<80 // Simple equation
+    Let,heatindex,0.5*(%c_c2f%(%eventvalue1%)+61.0+((%c_c2f%(%eventvalue1%)-68.0)*1.2)+(%eventvalue2%*0.094))
+  Endif
+  If %v_heatindex%>80 // Complex equation
+    Let,heatindex,-42.379+2.04901523*%c_c2f%(%eventvalue1%)+10.14333127*%eventvalue2%-0.22475541*%c_c2f%(%eventvalue1%)*%eventvalue2%-0.00683783*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)-0.05481717*%eventvalue2%*%eventvalue2%+0.00122874*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)*%eventvalue2%+0.00085282*%c_c2f%(%eventvalue1%)*%eventvalue2%*%eventvalue2%-0.00000199*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)*%eventvalue2%*%eventvalue2%
+    If %eventvalue2%<13
+      If %c_c2f%(%eventvalue1%)>80 And %c_c2f%(%eventvalue1%)<112
+        Let,heatindex,%v_heatindex%-((13-%eventvalue2%)/4)*sqrt((17-abs(%c_c2f%(%eventvalue1%)-95))/17)
+      Endif
+    Elseif %eventvalue2%>85
+      If %c_c2f%(%eventvalue1%)>80 And %c_c2f%(%eventvalue1%)<87
+        Let,heatindex,%v_heatindex%+(((%eventvalue2%-85)/10)*((87-%c_c2f%(%eventvalue1%))/5)
+      Endif
+    Endif
+  Endif
+  TaskValueSet data_7,heatindex,(%v_heatindex%-32)*0.55555555 // Convert to C
+  // Feelslike - combination between windchill and heatindex, like CumulusMX or Ecowitt uses it. NOT similar to DWD.
+  If %eventvalue1%<10 And [data_10#windspeed_avg2m]>5 // Temp lower 10 and Wind higher 5
+    TaskValueSet data_5,feelslike,[data_7#windchill]
+  Elseif [data_7#heatindex]<%eventvalue1%
+    TaskValueSet data_5,feelslike,%eventvalue1%
+  Else
+    TaskValueSet data_5,feelslike,[data_7#heatindex]
+  Endif
+Endon
+
+// Calculate Illuminance
+On veml7700_1#All Do
+  TaskValueSet data_1,illuminance,%eventvalue1%
+Endon
+
+// Calculate Solar Radiation
+On ina219_1#All Do
+  If %eventvalue1%<0.0005 // sometimes slightly negativ or small values due to offset
+      TaskValueSet data_1,solarradiation,0
+  Else
+    TaskValueSet data_1,solarradiation,%eventvalue1%*1792.1147 // (%eventvalue1%*1000/558)*1000 - Short circuit current (mA): 558 mA at 1000 W/m^2
+  Endif
+  TaskValueSet data_2,solarradiation_daily,[data_2#solarradiation_daily]+([data_1#solarradiation]*5) // Every 5 sec, converted to Ws
+  If [data_1#solarradiation]>%v_seuil% And %v_seuil%>0 // seuil is caluclated in Rules 1
+    TaskValueSet data_11,sunshine,1
+    TaskValueSet data_2,sunduration_daily,[data_2#sunduration_daily]+5 // Every 5 sec
+  Else
+    TaskValueSet data_11,sunshine,0
+  Endif
+Endon

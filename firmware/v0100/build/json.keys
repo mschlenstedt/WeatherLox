@@ -1,0 +1,10 @@
+1:elevation[0]
+2:passkey
+3:data.solarradiation_daily
+3:data.sunduration_daily
+3:data.windgust_maxdaily
+3:data.windrun_daily
+3:data.rain_daily
+3:data.rain_weekly
+3:data.rain_monthly
+3:data.rain_yearly
