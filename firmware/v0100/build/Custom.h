@@ -83,13 +83,13 @@
 // --- Default Controller ------------------------------------------------------------------------------
 #define DEFAULT_CONTROLLER   true                                          // true or false enabled or disabled, set 1st controller
                                                                             // defaults
-#define DEFAULT_CONTROLLER_ENABLED true                                     // Enable default controller by default
+#define DEFAULT_CONTROLLER_ENABLED false                                     // Enable default controller by default
 #define DEFAULT_CONTROLLER_USER    ""                                       // Default controller user
 #define DEFAULT_CONTROLLER_PASS    ""                                       // Default controller Password
 
 // using a default template, you also need to set a DEFAULT PROTOCOL to a suitable MQTT protocol !
-#define DEFAULT_PUB         "%sysname%/sensor/%valname%" // Enter your pub
-#define DEFAULT_SUB         "%sysname%/sensors/#"                   // Enter your sub
+#define DEFAULT_PUB         "%sysname%/data/%valname%" // Enter your pub
+#define DEFAULT_SUB         "%sysname%/set/#"                   // Enter your sub
 #define DEFAULT_SERVER      ""                                   // Enter your Server IP address
 #define DEFAULT_SERVER_HOST ""                                              // Server hostname
 #define DEFAULT_SERVER_USEDNS false                                         // true: Use hostname.  false: use IP
@@ -137,7 +137,7 @@
 #define DEFAULT_RULES_OLDENGINE                 true
 
 #define DEFAULT_MQTT_RETAIN                     true             // (true|false) Retain MQTT messages?
-#define DEFAULT_CONTROLLER_DELETE_OLDEST        false             // (true|false) to delete oldest message when queue is full
+#define DEFAULT_CONTROLLER_DELETE_OLDEST        true             // (true|false) to delete oldest message when queue is full
 #define DEFAULT_CONTROLLER_MUST_CHECK_REPLY     false             // (true|false) Check Acknowledgment
 #define DEFAULT_MQTT_DELAY                      100               // Time in milliseconds to retain MQTT messages
 #define DEFAULT_MQTT_LWT_TOPIC                  "%sysname%/status"          // Default LWT Topic
@@ -162,7 +162,7 @@
 #define DEFAULT_SD_LOG_LEVEL                    0                 // SD Card Log Level
 #define DEFAULT_USE_SD_LOG                      false             // (true|false) Enable Logging to the SD card
 
-#define DEFAULT_USE_SERIAL                      true              // (true|false) Enable Logging to the Serial Port
+#define DEFAULT_USE_SERIAL                      false             // (true|false) Enable Logging to the Serial Port
 #define DEFAULT_SERIAL_BAUD                     115200            // Serial Port Baud Rate
 
 #define DEFAULT_SYNC_UDP_PORT                   8266              // Used for ESPEasy p2p. (IANA registered port: 8266)
@@ -267,7 +267,7 @@
 #define DEFAULT_PROVISIONING_SAVE_URL           true
 #define DEFAULT_PROVISIONING_SAVE_CREDENTIALS   true
 #define DEFAULT_PROVISIONING_ALLOW_FETCH_COMMAND true
-#define DEFAULT_PROVISIONING_URL                "http://provisioning.weatherlox.de/v0100"
+#define DEFAULT_PROVISIONING_URL                "http://webservices.weatherlox.de/provisioning/v0100"
 #define DEFAULT_PROVISIONING_USER               ""
 #define DEFAULT_PROVISIONING_PASS               ""
 #endif

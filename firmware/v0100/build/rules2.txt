@@ -1,4 +1,4 @@
-// V1.0.0 - 12.01.2026
+// V1.0.1 - 16.01.2026
 
 // Caluclate rainrate
 On input_1#All Do

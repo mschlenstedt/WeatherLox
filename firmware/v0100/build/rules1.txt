@@ -1,4 +1,4 @@
-// V1.0.0 - 12.01.2026
+// V1.0.1 - 16.01.2026
 
 On System#Boot Do
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +100,28 @@ Endon
 
 // Minutely Tasks / Events
 On Clock#Time=All,**:** Do
+  // Hourly Tasks / Events
+  If %sysmin%=0
+    TaskValueSet data_6,rain_hourly,0
+  Endif
+  // Daily, Weekly, Monthly, Yearly Tasks / Events
+  If %sysmin%=0 And %syshour%=0
+    TaskValueSet data_2,solarradiation_daily,0
+    TaskValueSet data_2,sunduration_daily,0
+    TaskValueSet data_13,windgust_maxdaily,0
+    TaskValueSet data_13,windrun_daily,0
+    TaskValueSet data_13,rain_daily,0
+    If %sysweekday%=2 // Weekly
+      TaskValueSet data_13,rain_weekly,0
+    Endif
+    If %sysday%=1 // Monthly
+      TaskValueSet data_6,rain_monthly,0
+    Endif
+    If %sysday%=1 And %sysmonth%=1 // Yearly
+      TaskValueSet data_6,rain_yearly,0
+    Endif
+  Endif
+  // Minutely Tasks
   // Caluclate pressure trends
   // See: https://www.nxp.com/docs/en/application-note/AN3914.pdf
   TaskValueSet internal_2,int_random,%c_random%(0, 1) // Force the Statistics to be updated
@@ -110,9 +132,9 @@ On Clock#Time=All,**:** Do
       TaskValueSet data_9,pressuretrend1,2
     Elseif [data_8#pressurechange1]>0.2
       TaskValueSet data_9,pressuretrend1,1
-    Elseif [data_8#pressurechange1]<0.7
+    Elseif [data_8#pressurechange1]<-0.7
       TaskValueSet data_9,pressuretrend1,-2
-    Elseif [data_8#pressurechange1]<0.2
+    Elseif [data_8#pressurechange1]<-0.2
       TaskValueSet data_9,pressuretrend1,-1
     Else
       TaskValueSet data_9,pressuretrend1,0
@@ -124,9 +146,9 @@ On Clock#Time=All,**:** Do
       TaskValueSet data_9,pressuretrend3,2
     Elseif [data_8#pressurechange3]>0.7
       TaskValueSet data_9,pressuretrend3,1
-    Elseif [data_8#pressurechange3]<2
+    Elseif [data_8#pressurechange3]<-2
       TaskValueSet data_9,pressuretrend3,-2
-    Elseif [data_8#pressurechange3]<0.7
+    Elseif [data_8#pressurechange3]<-0.7
       TaskValueSet data_9,pressuretrend3,-1
     Else
       TaskValueSet data_9,pressuretrend3,0
@@ -137,7 +159,7 @@ On Clock#Time=All,**:** Do
   // See: http://meteo-sciez.fr/O1_07_Vuerich_Sunshine_Duration.pdf
   // See: https://library.wmo.int/viewer/68695/?offset=#page=344&viewer=picture&o=bookmark&n=0&q=
   If %latitude% > 0 And %longitude% > 0
-    Let,dayofyear,round((%unixtime%/86400)-((%sysyear%-1970)*365+(%sysyear%-1970)/4))
+    Let,dayofyear,round((%unixtime%/86400)-((%sysyear%-1970)*365+(%sysyear%-1970)/4))+1
     Let,thetasd,360*%v_dayofyear%/365
     Let,thetasdrad,(3.14159265359/180)*%v_thetasd%
     Let,equatemps1,0.0172+0.4281*(cos(%v_thetasdrad%))
@@ -192,29 +214,6 @@ On Rules#Timer=1 Do
   // Get weather data from Open Meteo and calculating pressure trends if enabled
   If %v_getopenmeteo%>1
     SendToHTTP,api.open-meteo.com,80,"v1/forecast?latitude=%latitude%&longitude=%longitude%&current=precipitation_probability,visibility,evapotranspiration,et0_fao_evapotranspiration,weather_code,cloud_cover"
-  Endif
-Endon
-
-// Hourly Tasks / Events
-On Clock#Time=All,**:00 Do
-  TaskValueSet data_6,rain_hourly,0
-Endon
-
-// Daily Tasks / Events
-On Clock#Time=All,00:00 Do
-  TaskValueSet data_2,solarradiation_daily,0
-  TaskValueSet data_2,sunduration_daily,0
-  TaskValueSet data_13,windgust_maxdaily,0
-  TaskValueSet data_13,windrun_daily,0
-  TaskValueSet data_13,rain_daily,0
-  If %sysweekday%=2 // Weekly
-    TaskValueSet data_13,rain_weekly,0
-  Endif
-  If %sysday%=1 // Monthly
-    TaskValueSet data_6,rain_monthly,0
-  Endif
-  If %sysday%=1 And %sysmonth%=1 // Yearly
-    TaskValueSet data_6,rain_yearly,0
   Endif
 Endon
 

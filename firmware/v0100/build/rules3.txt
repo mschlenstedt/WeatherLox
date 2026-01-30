@@ -1,4 +1,4 @@
-// V1.0.0 - 12.01.2026
+// V1.0.1 - 16.01.2026
 
 // Calculate Temperature, Humdity rel/abs, Pressure, Dewpoint, Windchill, Heat Index, Feelslike
 On bme280_1#All Do
