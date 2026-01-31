@@ -382,7 +382,7 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 // #define USES_P023   // OLED SSD1306
 // #define USES_P024   // MLX90614
 #define USES_P025   // ADS1x15
-#define USES_P026   // SysInfo
+// #define USES_P026   // SysInfo
 #define USES_P027   // INA219
 #define USES_P028   // BMx280
 // #define USES_P029   // Domoticz MQTT Helper
@@ -433,7 +433,7 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 // #define USES_P065   // DRF0299
 // #define USES_P066   // VEML6040
 // #define USES_P067   // HX711_Load_Cell
-// #define USES_P068   // SHT3x
+#define USES_P068   // SHT3x
 // #define USES_P069   // LM75A
 
 // #define USES_P070   // NeoPixel_Clock
