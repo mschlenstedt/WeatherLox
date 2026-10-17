@@ -1,25 +1,42 @@
-// V1.0.1 - 16.01.2026
-
-// Caluclate rainrate
-On input_1#All Do
-  If %eventvalue1%=1
-    TaskValueSet data_13,rain_daily,[data_13#rain_daily]+%v_rainbucket% // %v_rainbucket% mm per Pulse
-    TaskValueSet data_13,rain_weekly,[data_13#rain_weekly]+%v_rainbucket%
-    TaskValueSet data_6,rain_monthly,[data_6#rain_monthly]+%v_rainbucket%
-    TaskValueSet data_6,rain_yearly,[data_6#rain_yearly]+%v_rainbucket%
-    TaskValueSet data_6,rain_hourly,[data_6#rain_hourly]+%v_rainbucket%
-    TaskValueSet data_6,rain_event,[data_6#rain_event]+%v_rainbucket%
-    If %unixtime%<(%v_rainratelast%+600)
-      TaskValueSet data_4,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600 // %v_rainbucket% mm per Pulse, converted to mm/h
-    Endif
-    Let,rainratelast,%unixtime%
-  Endif
+// V1.0.2_min - 17.01.2026
+on WiFi#Connected Do
+LetStr,ecowittstationtype,"WeatherLox"
+LetStr,ecowittmodel,"WEATHERLOX_V1.0"
+LetStr,ecowittmac,{urlencode:"%mac%"}
+Let,rainratelast,0
+TaskEnable,ads1115_1
+TaskEnable,veml7700_1
+TaskEnable,ina219_1
+TaskEnable,bmx280_1
+TaskEnable,as3935_1
+TaskEnable,sht3x_1
+If %v_savesumvalues%>0 And %v_sumvaluesset%<1
+SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+Endif
+Let,sumvaluesset,1
+LoopTimerSetAndRun,1,900
+LoopTimerSetAndRun,2,5
+LoopTimerSetAndRun,3,300
+If %v_stationheight%=0
+SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
+Endif
+If [data_1#settings.controller3.enabled]>0
+SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
+Endif
 Endon
-
-// Calculate rain status (and rainrate < 1 mm/h)
-On input_2#All Do
-  TaskValueSet data_9,rainstate,%eventvalue1%
-  If %eventvalue1%=1 And [data_4#rainrate]=0 // If we detect rain here but the bucket counter is still zero, set 0.5 mm/h here (minimum of bucket counter is 1.2 mm/h)
-    TaskValueSet data_4,rainrate,0.5
-  Endif
+On OpenMeteo#current Do
+TaskValueSet data_3,precipitationprob,%eventvalue1%
+TaskValueSet data_3,visibility,%eventvalue2%/1000
+TaskValueSet data_3,evapotranspiration,%eventvalue3%
+TaskValueSet data_3,et0evapotranspiration,%eventvalue4%
+TaskValueSet data_4,weathercode,%eventvalue5%
+TaskValueSet data_4,cloudcover,%eventvalue6%
+Endon
+On JsonReply* Do
+If %eventpar%=1
+Let,stationheight,%eventvalue1%
+Elseif %eventpar%=2
+LetStr,ecowittpasskey,%eventvalue1%
+Elseif %eventpar%=3
+Endif
 Endon

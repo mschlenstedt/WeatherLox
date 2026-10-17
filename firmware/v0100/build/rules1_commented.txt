@@ -1,0 +1,32 @@
+ // V1.0.2 - 17.01.2026
+
+On System#Boot Do
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Set some important variables manually
+  //
+  // Set station height over ground - leave to 0 for automatic
+  Let,stationheight,0
+  //
+  // Set Coefficients for calculating sun duration!
+  // Note: Explanation: https://github.com/Jterrettaz/sunduration
+  // Note: globcoeff 0.92 for germany. Too little sunshine recorded: decrease value; too much sunshine recorded: increase value)
+  // Note: bcoeff 0.65 default value
+  Let,globcoeff,0.92
+  Let,bcoeff,0.06
+  //
+  // Volume of the rainamount bucket in mm
+  Let,rainbucket,0.2
+  //
+  // Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (vor restoring after powerloss)
+  Let,savesumvalues,1
+  //
+  // Get some values from OpenMeteo we cannot measure by ourselves
+  Let,getopenmeteo,1
+  //
+  // Kind of winddirection sensor: 0=0-360° | 1=8-Directions
+  Let,winddirsensor,1
+  //
+  // No changes beyond this line!
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+Endon

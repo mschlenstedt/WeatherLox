@@ -1,0 +1,59 @@
+ // V1.0.2 - 17.01.2026
+
+on WiFi#Connected Do
+  // Some default vars
+  LetStr,ecowittstationtype,"WeatherLox"
+  LetStr,ecowittmodel,"WEATHERLOX_V1.0"
+  LetStr,ecowittmac,{urlencode:"%mac%"}
+  Let,rainratelast,0
+  
+  // Now we're enabling tasks for I2C sensors as they may have been disabled when not found
+  TaskEnable,ads1115_1
+  TaskEnable,veml7700_1
+  TaskEnable,ina219_1
+  TaskEnable,bmx280_1
+  TaskEnable,as3935_1
+  TaskEnable,sht3x_1
+
+  // Restore sum values from weatherlox webserver, currently there's no option in ESPEasy to save values
+  // Only first time after cold reboot
+  If %v_savesumvalues%>0 And %v_sumvaluesset%<1
+    SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+  Endif
+  Let,sumvaluesset,1
+  // Start Timer for some quarterly tasks / events
+  LoopTimerSetAndRun,1,900
+  // Start Timer for some 5 seconds tasks / events
+  LoopTimerSetAndRun,2,5
+  // Start Timer for some 5 minutes tasks / events
+  LoopTimerSetAndRun,3,300
+  // Get station height from Open Meteo if not set here in the rules manually
+  If %v_stationheight%=0
+    SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
+  Endif
+  // Get passkey for Ecowitt Format for our mac address if enabled - ESPEasy cannot calculate MD5 checksums
+  If [data_1#settings.controller3.enabled]>0
+    SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
+  Endif
+Endon
+
+// Parse data from Open Meteo
+On OpenMeteo#current Do
+    TaskValueSet data_3,precipitationprob,%eventvalue1%
+    TaskValueSet data_3,visibility,%eventvalue2%/1000
+    TaskValueSet data_3,evapotranspiration,%eventvalue3%
+    TaskValueSet data_3,et0evapotranspiration,%eventvalue4%
+    TaskValueSet data_4,weathercode,%eventvalue5% // https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM
+    TaskValueSet data_4,cloudcover,%eventvalue6%
+Endon
+
+// Parse data from JSON sources
+On JsonReply* Do
+  If %eventpar%=1 // Station height for pressure calculations
+    Let,stationheight,%eventvalue1%
+  Elseif %eventpar%=2 // Passkey for Ecowitt
+    LetStr,ecowittpasskey,%eventvalue1%
+  Elseif %eventpar%=3 // Get saved data from server
+    //LetStr,passkey,%eventvalue1%
+  Endif
+Endon
