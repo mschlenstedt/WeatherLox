@@ -13,7 +13,8 @@ On Rules#Timer=2 Do
   Endif
   // Prepare and send data for Ecowitt if enabled
   If [data_1#settings.controller3.enabled]>0
-    LetStr,ecowittdateutc,"{urlencode:"{substring:0:19:"%c_ts2date%(%unixtime%+%systzoffset_s%)"}"}"
+    // %unixtime% is UTC and %c_ts2date% does not apply a time zone. The argument is read as float (no calculation!), so the time is up to 64 s off
+    LetStr,ecowittdateutc,"{urlencode:"{substring:0:19:"%c_ts2date%(%unixtime%)"}"}"
     Let,ecowitttempf,%c_c2f%([data_8#temperature])
     Let,ecowittbaromabsin,[data_7#pressure_abs]*0.02953
     Let,ecowittbaromrelin,[data_9#pressure_rel]*0.02953
@@ -27,13 +28,14 @@ On Rules#Timer=2 Do
     Let,ecowittwindspeedmph,[data_10#windspeed]*0.621371
     Let,ecowittwindgustmph,[data_10#windgust_max2m]*0.621371
     Let,ecowittwindspdmph_avg2m,[data_10#windspeed_avg2m]*0.621371
+    Let,ecowittwindspdmph_avg10m,[data_10#windspeed_avg10m]*0.621371
     LetStr,ecowittblock1,"mac=[str#ecowittmac]&PASSKEY=[str#ecowittpasskey]&dateutc=[str#ecowittdateutc]&stationtype=[str#ecowittstationtype]&model=[str#ecowittmodel]&"
     LetStr,ecowittblock2,"twilight=[data_1#twilight]&brightness=[data_1#illuminance]&uv=[data_1#uvi]&solarradiation=[data_1#solarradiation]&"
     LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_8#humidity]&"
     LetStr,ecowittblock4,"srain_piezo=[data_9#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
     LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
-    LetStr,ecowittblock6,"lightning_time=[data_12#lightning_time]&lightning_num=[data_12#lightning_count]&lightning=[data_12#lightning]&"
-    LetStr,ecowittblock7,"winddir=[data_11#winddir]&winddir_avg2m=[data_11#winddir_avg2m]&winddir_avg10m=[data_11#winddir_avg_10m]&"
+    LetStr,ecowittblock6,"lightning_time=[data_12#lightning_time]&lightning_num=[data_12#lightning_daily]&lightning=[data_12#lightning]&"
+    LetStr,ecowittblock7,"winddir=[data_11#winddir]&winddir_avg2m=[data_11#winddir_avg2m]&winddir_avg10m=[data_11#winddir_avg10m]&"
     LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&" 
   Endif
 Endon
