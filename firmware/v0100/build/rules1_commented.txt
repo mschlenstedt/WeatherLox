@@ -19,7 +19,7 @@ On System#Boot Do
   // Volume of the rainamount bucket in mm
   Let,rainbucket,0.2
   //
-  // Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (vor restoring after powerloss)
+  // Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (for restoring after powerloss)
   Let,savesumvalues,1
   //
   // Get some values from OpenMeteo we cannot measure by ourselves

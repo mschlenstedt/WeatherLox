@@ -8,12 +8,7 @@ on WiFi#Connected Do
   Let,rainratelast,0
   
   // Now we're enabling tasks for I2C sensors as they may have been disabled when not found
-  TaskEnable,ads1115_1
-  TaskEnable,veml7700_1
-  TaskEnable,ina219_1
-  TaskEnable,bmx280_1
-  TaskEnable,as3935_1
-  TaskEnable,sht3x_1
+  Event,EnableSensors
 
   // Restore sum values from weatherlox webserver, currently there's no option in ESPEasy to save values
   // Only first time after cold reboot
@@ -35,6 +30,17 @@ on WiFi#Connected Do
   If [data_1#settings.controller3.enabled]>0
     SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
   Endif
+Endon
+
+// Enable tasks for I2C sensors - ESPEasy disables a task if the sensor is not found at startup
+// Called at WiFi#Connected and every 5 minutes (Rules 4). Add new I2C sensors here.
+On EnableSensors Do
+  TaskEnable,ads1115_1
+  TaskEnable,veml7700_1
+  TaskEnable,ina219_1
+  TaskEnable,bmx280_1
+  TaskEnable,as3935_1
+  TaskEnable,sht3x_1
 Endon
 
 // Parse data from Open Meteo

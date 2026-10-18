@@ -72,12 +72,13 @@ On Clock#Time=All,**:** Do
     Endif
   Endif
   // Minutely Tasks
-  // Caluclate pressure trends
+  // Calculate pressure trends
   // See: https://www.nxp.com/docs/en/application-note/AN3914.pdf
   TaskValueSet internal_2,int_random,%c_random%(0, 1) // Force the Statistics to be updated
   TaskValueSetAndRun internal_2,int_pressure,[bmx280_1#raw_pressure_abs.avg60]
-  If [internal_2#int_pressure.sample]>59
-    TaskValueSet data_8,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample60]
+  // sample1 is the newest value (one per minute), so sample61 is 60 minutes ago and sample181 is 180 minutes ago
+  If [internal_2#int_pressure.sample]>60
+    TaskValueSet data_8,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample61]
     If [data_8#pressurechange1]>0.7
       TaskValueSet data_9,pressuretrend1,2
     Elseif [data_8#pressurechange1]>0.2
@@ -90,8 +91,8 @@ On Clock#Time=All,**:** Do
       TaskValueSet data_9,pressuretrend1,0
     Endif
   Endif
-  If [internal_2#int_pressure.sample]>179
-    TaskValueSet data_8,pressurechange3,[internal_2#int_pressure]-[internal_2#int_pressure.sample180]
+  If [internal_2#int_pressure.sample]>180
+    TaskValueSet data_8,pressurechange3,[internal_2#int_pressure]-[internal_2#int_pressure.sample181]
     If [data_8#pressurechange3]>2
       TaskValueSet data_9,pressuretrend3,2
     Elseif [data_8#pressurechange3]>0.7
@@ -138,13 +139,8 @@ Endon
 
 // 5min Tasks / Events
 On Rules#Timer=3 Do
- // Try to enabling tasks for I2C sensors again in case they were lost
-  TaskEnable,ads1115_1
-  TaskEnable,veml7700_1
-  TaskEnable,ina219_1
-  TaskEnable,bmx280_1
-  TaskEnable,as3935_1
-  TaskEnable,sht3x_1
+  // Try to enable tasks for I2C sensors again in case they were lost (Rules 2)
+  Event,EnableSensors
   // Save sum values to weatherlox webserver to save them for a power loss, currently there's no option in ESPEasy to save values
   If %v_savesumvalues%>0
     SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_2#solarradiation_daily]&sunduration_daily=[data_2#sunduration_daily]&windgust_maxdaily=[data_13#windgust_maxdaily]&windrun_daily=[data_13#windrun_daily]&rain_daily=[data_13#rain_daily]&rain_weekly=[data_13#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]"
@@ -153,7 +149,7 @@ Endon
 
 // Quarterly Tasks / Events
 On Rules#Timer=1 Do
-  // Get weather data from Open Meteo and calculating pressure trends if enabled
+  // Get weather data from Open Meteo if enabled
   If %v_getopenmeteo%>0
     SendToHTTP,api.open-meteo.com,80,"v1/forecast?latitude=%latitude%&longitude=%longitude%&current=precipitation_probability,visibility,evapotranspiration,et0_fao_evapotranspiration,weather_code,cloud_cover"
   Endif

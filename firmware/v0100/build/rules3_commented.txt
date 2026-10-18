@@ -114,11 +114,11 @@ On ina219_1#All Do
   Else
     TaskValueSet data_1,solarradiation,%eventvalue1%*1792.1147 // (%eventvalue1%*1000/558)*1000 - Short circuit current (mA): 558 mA at 1000 W/m^2
   Endif
-  Let,solarradiation_daily,(%v_solarradiation_daily%+([data_1#solarradiation]*5/3600)) // Wh/m²
+  Let,solarradiation_daily,(%v_solarradiation_daily%+([data_1#solarradiation]*[ina219_1#settings.interval]/3600)) // Wh/m² - one value per task interval (s)
   TaskValueSet data_2,solarradiation_daily,%v_solarradiation_daily%
   If [data_1#solarradiation]>%v_seuil% And [data_1#solarradiation]>%v_sunmin% // Like FOSHKplugin: above threshold seuil (Rules 4, calcsun; 0 below 3° sun elevation) and above sunmin
     TaskValueSet data_11,sunshine,1
-    Let,sunduration_daily,(%v_sunduration_daily%+(5/3600)) // h
+    Let,sunduration_daily,(%v_sunduration_daily%+([ina219_1#settings.interval]/3600)) // h
     TaskValueSet data_2,sunduration_daily,%v_sunduration_daily%
   Else
     TaskValueSet data_11,sunshine,0
@@ -146,16 +146,16 @@ On ads1115_1#All Do
   TaskValueSet internal_1,int_winddir_x,cos_d([data_11#winddir])
   TaskValueSet internal_1,int_winddir_y,sin_d([data_11#winddir]) // ....and Run to Save the stats
   TaskRun internal_1
-  // Wind Speed AVG and Max
+  // Wind Speed AVG and Max - avg24/avg120 assume a task interval of 5 s (24 values = 2 min, 120 values = 10 min)
   TaskValueSet data_10,windspeed_avg2m,[internal_1#int_windspeed.avg24]  // Average of windspeed - every 5 sec a value. 2 Min AVG
   TaskValueSet data_10,windspeed_avg10m,[internal_1#int_windspeed.avg120] // Average of windspeed - every 5 sec a value. 10 Min AVG
   TaskValueSet data_10,windgust_max2m,[internal_1#int_windspeed.max24] // Max of windspeed - every 5 sec a value. 2 Min MAX
   TaskValueSet data_12,windgust_max10m,[internal_1#int_windspeed.max120]  // Max of windspeed - every 5 sec a value. 10 Min MAX
   TaskValueSet data_5,beaufort,%c_ms2Bft%([data_10#windspeed_avg2m]/3.6)
   If [data_10#windspeed]>[data_13#windgust_maxdaily] // Setting daily maximum
-    TaskValueSetAndRun data_13,windgust_maxdaily,[data_10#windspeed]
+    TaskValueSet data_13,windgust_maxdaily,[data_10#windspeed]
   Endif
-  Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]/3600*5))
+  Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]*[ads1115_1#settings.interval]/3600)) // km - one value per task interval (s)
   TaskValueSet data_13,windrun_daily,%v_windrun_daily%
   // Winddirection AVG: vector mean like FOSHKplugin avgWind - every 5 sec a value, avg24 = 2 min, avg120 = 10 min
   // ESPEasy bug (mega-20260720): 2-argument functions (atan2_d, fmod) need brackets around the whole call and around
