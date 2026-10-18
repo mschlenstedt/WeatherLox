@@ -110,10 +110,10 @@ On as3935_1#All Do
     If %eventvalue2%<%v_lightningdist%
       Let,lightningdist,%eventvalue2%
     Endif
-    TaskValueSet data_12,lightning,%v_lightningdist%
+    TaskValueSet data_15,lightning,%v_lightningdist%
     TaskValueSet data_15,lightning_time,%unixtime%
     Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
-    TaskValueSet data_12,lightning_daily,%v_lightning_daily%
+    TaskValueSet data_15,lightning_daily,%v_lightning_daily%
   Endif
 Endon
 

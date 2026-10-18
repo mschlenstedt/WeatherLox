@@ -34,7 +34,7 @@ On Rules#Timer=2 Do
     LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_1#humidity]&"
     LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
     LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
-    LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_12#lightning_daily]&lightning=[data_12#lightning]&"
+    LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_15#lightning_daily]&lightning=[data_15#lightning]&"
     LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
     LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&" 
   Endif
@@ -58,7 +58,7 @@ On Clock#Time=All,**:** Do
     Let,windrun_daily,0
     TaskValueSet data_6,rain_daily,0
     Let,rain_daily,0
-    TaskValueSet data_12,lightning_daily,0
+    TaskValueSet data_15,lightning_daily,0
     Let,lightning_daily,0
     If %sysweekday%=2 // Weekly
       TaskValueSet data_6,rain_weekly,0
