@@ -157,33 +157,9 @@ On ads1115_1#All Do
   Endif
   Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]/3600*5))
   TaskValueSet data_13,windrun_daily,%v_windrun_daily%
-  // Winddirection AVG
-  Let,x_winddir_avg2m,[internal_1#int_winddir_x.avg24] // Average of the vector components - every 5 sec a value. 2 Min AVG
-  Let,y_winddir_avg2m,[internal_1#int_winddir_y.avg24]
-  Let,x_winddir_avg10m,[internal_1#int_winddir_x.avg120] // Average of the vector components - every 5 sec a value. 10 Min AVG
-  Let,y_winddir_avg10m,[internal_1#int_winddir_y.avg120]
-  If %v_x_winddir_avg2m%>0 // Quadrantenkorrektur for avg_2m, because atan2 does not exist in ESPEasy
-    Let,theta_avg2m,atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%)
-  Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%>= 0
-    Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))+3.14159265359
-  Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%<0
-    Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))-3.14159265359
-  Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%>0
-    Let,theta_avg2m,3.14159265359/2
-  Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%<0
-    Let,theta_avg2m,-3.14159265359/2
-  Endif
-  If %v_x_winddir_avg10m%>0 // Quadrantenkorrektur for avg_10m, because atan2 does not exist in ESPEasy
-    Let,theta_avg10m,atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%)
-  Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%>=0
-    Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))+3.14159265359
-  Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%<0
-    Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))-3.14159265359
-  Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%>0
-    Let,theta_avg10m,3.14159265359/2
-  Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%<0
-    Let,theta_avg10m,-3.14159265359/2
-  Endif
-  TaskValueSet data_11,winddir_avg2m,((%v_theta_avg2m%*180/3.14159265359)+360)%360 // Convert to degrees and positive value via modulo
-  TaskValueSet data_11,winddir_avg10m,((%v_theta_avg10m%*180/3.14159265359)+360)%360 // Convert to degrees and positive value via modulo
+  // Winddirection AVG: vector mean like FOSHKplugin avgWind - every 5 sec a value, avg24 = 2 min, avg120 = 10 min
+  // ESPEasy bug (mega-20260720): 2-argument functions (atan2_d, fmod) need brackets around the whole call and around
+  // a calculated first argument, otherwise operators get lost: 360+atan2_d(-1:-1) = -135, fmod(5+5:3) = 5
+  TaskValueSet data_11,winddir_avg2m,fmod((atan2_d([internal_1#int_winddir_y.avg24]:[internal_1#int_winddir_x.avg24])+360):360)
+  TaskValueSet data_11,winddir_avg10m,fmod((atan2_d([internal_1#int_winddir_y.avg120]:[internal_1#int_winddir_x.avg120])+360):360)
 Endon
