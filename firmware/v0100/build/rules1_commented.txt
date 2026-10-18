@@ -13,6 +13,8 @@ On System#Boot Do
   // Note: bcoeff 0.06 default value
   Let,globcoeff,0.92
   Let,bcoeff,0.06
+  // Note: sunmin: minimum solar radiation in W/m² for sunshine (like FOSHKplugin SUN_MIN, default 12)
+  Let,sunmin,12
   //
   // Volume of the rainamount bucket in mm
   Let,rainbucket,0.2
