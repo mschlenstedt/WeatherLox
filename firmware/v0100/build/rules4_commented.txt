@@ -3,39 +3,39 @@
 // 5sec Tasks / Events
 On Rules#Timer=2 Do
   // Resetting Rainrate if no pulse the last 600s
-  If %unixtime%>(%v_rainratelast%+600) And [data_9#rainstate]=0
-      TaskValueSet data_4,rainrate,0
+  If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
+      TaskValueSet data_5,rainrate,0
   Endif
   // Resetting Rain Event
-  If %unixtime%>(%v_rainratelast%+3600) And [data_9#rainstate]=0
-    TaskValueSet data_6,rain_event,0
+  If %unixtime%>(%v_rainratelast%+3600) And [data_5#rainstate]=0
+    TaskValueSet data_5,rain_event,0
     Let,rain_event,0
   Endif
   // Prepare and send data for Ecowitt if enabled
   If [data_1#settings.controller3.enabled]>0
     // %unixtime% is UTC and %c_ts2date% does not apply a time zone. The argument is read as float (no calculation!), so the time is up to 64 s off
     LetStr,ecowittdateutc,"{urlencode:"{substring:0:19:"%c_ts2date%(%unixtime%)"}"}"
-    Let,ecowitttempf,%c_c2f%([data_8#temperature])
-    Let,ecowittbaromabsin,[data_7#pressure_abs]*0.02953
-    Let,ecowittbaromrelin,[data_9#pressure_rel]*0.02953
-    Let,ecowittrainratein,[data_4#rainrate]/25.4
-    Let,ecowitteventrainin,[data_6#rain_event]/25.4
-    Let,ecowitthourlyrainin,[data_6#rain_hourly]/25.4
-    Let,ecowittdailyrainin,[data_13#rain_daily]/25.4
-    Let,ecowittweeklyrainin,[data_13#rain_weekly]/25.4
+    Let,ecowitttempf,%c_c2f%([data_1#temperature])
+    Let,ecowittbaromabsin,[data_3#pressure_abs]*0.02953
+    Let,ecowittbaromrelin,[data_3#pressure_rel]*0.02953
+    Let,ecowittrainratein,[data_5#rainrate]/25.4
+    Let,ecowitteventrainin,[data_5#rain_event]/25.4
+    Let,ecowitthourlyrainin,[data_5#rain_hourly]/25.4
+    Let,ecowittdailyrainin,[data_6#rain_daily]/25.4
+    Let,ecowittweeklyrainin,[data_6#rain_weekly]/25.4
     Let,ecowittmonthlyrainin,[data_6#rain_monthly]/25.4
     Let,ecowittyearlyrainin,[data_6#rain_yearly]/25.4
-    Let,ecowittwindspeedmph,[data_10#windspeed]*0.621371
-    Let,ecowittwindgustmph,[data_10#windgust_max2m]*0.621371
-    Let,ecowittwindspdmph_avg2m,[data_10#windspeed_avg2m]*0.621371
-    Let,ecowittwindspdmph_avg10m,[data_10#windspeed_avg10m]*0.621371
+    Let,ecowittwindspeedmph,[data_7#windspeed]*0.621371
+    Let,ecowittwindgustmph,[data_7#windgust_max2m]*0.621371
+    Let,ecowittwindspdmph_avg2m,[data_7#windspeed_avg2m]*0.621371
+    Let,ecowittwindspdmph_avg10m,[data_7#windspeed_avg10m]*0.621371
     LetStr,ecowittblock1,"mac=[str#ecowittmac]&PASSKEY=[str#ecowittpasskey]&dateutc=[str#ecowittdateutc]&stationtype=[str#ecowittstationtype]&model=[str#ecowittmodel]&"
-    LetStr,ecowittblock2,"twilight=[data_1#twilight]&brightness=[data_1#illuminance]&uv=[data_1#uvi]&solarradiation=[data_1#solarradiation]&"
-    LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_8#humidity]&"
-    LetStr,ecowittblock4,"srain_piezo=[data_9#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
+    LetStr,ecowittblock2,"twilight=[data_10#twilight]&brightness=[data_10#illuminance]&uv=[data_10#uvi]&solarradiation=[data_10#solarradiation]&"
+    LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_1#humidity]&"
+    LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
     LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
-    LetStr,ecowittblock6,"lightning_time=[data_12#lightning_time]&lightning_num=[data_12#lightning_daily]&lightning=[data_12#lightning]&"
-    LetStr,ecowittblock7,"winddir=[data_11#winddir]&winddir_avg2m=[data_11#winddir_avg2m]&winddir_avg10m=[data_11#winddir_avg10m]&"
+    LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_12#lightning_daily]&lightning=[data_12#lightning]&"
+    LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
     LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&" 
   Endif
 Endon
@@ -44,22 +44,24 @@ Endon
 On Clock#Time=All,**:** Do
   // Hourly Tasks / Events
   If %sysmin%=0
-    TaskValueSet data_6,rain_hourly,0
+    TaskValueSet data_5,rain_hourly,0
     Let,rain_hourly,0
   Endif
   // Daily, Weekly, Monthly, Yearly Tasks / Events
   If %syssec_d%<59
     Let,solarradiation_daily,0
-    TaskValueSet data_2,solarradiation_daily,0
+    TaskValueSet data_11,solarradiation_daily,0
     Let,sunduration_daily,0
-    TaskValueSet data_2,sunduration_daily,0
-    TaskValueSet data_13,windgust_maxdaily,0
-    TaskValueSet data_13,windrun_daily,0
+    TaskValueSet data_11,sunduration_daily,0
+    TaskValueSet data_9,windgust_maxdaily,0
+    TaskValueSet data_9,windrun_daily,0
     Let,windrun_daily,0
-    TaskValueSet data_13,rain_daily,0
+    TaskValueSet data_6,rain_daily,0
     Let,rain_daily,0
+    TaskValueSet data_12,lightning_daily,0
+    Let,lightning_daily,0
     If %sysweekday%=2 // Weekly
-      TaskValueSet data_13,rain_weekly,0
+      TaskValueSet data_6,rain_weekly,0
       Let,rain_weekly,0
     Endif
     If %sysday%=1 // Monthly
@@ -78,31 +80,31 @@ On Clock#Time=All,**:** Do
   TaskValueSetAndRun internal_2,int_pressure,[bmx280_1#raw_pressure_abs.avg60]
   // sample1 is the newest value (one per minute), so sample61 is 60 minutes ago and sample181 is 180 minutes ago
   If [internal_2#int_pressure.sample]>60
-    TaskValueSet data_8,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample61]
-    If [data_8#pressurechange1]>0.7
-      TaskValueSet data_9,pressuretrend1,2
-    Elseif [data_8#pressurechange1]>0.2
-      TaskValueSet data_9,pressuretrend1,1
-    Elseif [data_8#pressurechange1]<-0.7
-      TaskValueSet data_9,pressuretrend1,-2
-    Elseif [data_8#pressurechange1]<-0.2
-      TaskValueSet data_9,pressuretrend1,-1
+    TaskValueSet data_3,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample61]
+    If [data_3#pressurechange1]>0.7
+      TaskValueSet data_4,pressuretrend1,2
+    Elseif [data_3#pressurechange1]>0.2
+      TaskValueSet data_4,pressuretrend1,1
+    Elseif [data_3#pressurechange1]<-0.7
+      TaskValueSet data_4,pressuretrend1,-2
+    Elseif [data_3#pressurechange1]<-0.2
+      TaskValueSet data_4,pressuretrend1,-1
     Else
-      TaskValueSet data_9,pressuretrend1,0
+      TaskValueSet data_4,pressuretrend1,0
     Endif
   Endif
   If [internal_2#int_pressure.sample]>180
-    TaskValueSet data_8,pressurechange3,[internal_2#int_pressure]-[internal_2#int_pressure.sample181]
-    If [data_8#pressurechange3]>2
-      TaskValueSet data_9,pressuretrend3,2
-    Elseif [data_8#pressurechange3]>0.7
-      TaskValueSet data_9,pressuretrend3,1
-    Elseif [data_8#pressurechange3]<-2
-      TaskValueSet data_9,pressuretrend3,-2
-    Elseif [data_8#pressurechange3]<-0.7
-      TaskValueSet data_9,pressuretrend3,-1
+    TaskValueSet data_4,pressurechange3,[internal_2#int_pressure]-[internal_2#int_pressure.sample181]
+    If [data_4#pressurechange3]>2
+      TaskValueSet data_4,pressuretrend3,2
+    Elseif [data_4#pressurechange3]>0.7
+      TaskValueSet data_4,pressuretrend3,1
+    Elseif [data_4#pressurechange3]<-2
+      TaskValueSet data_4,pressuretrend3,-2
+    Elseif [data_4#pressurechange3]<-0.7
+      TaskValueSet data_4,pressuretrend3,-1
     Else
-      TaskValueSet data_9,pressuretrend3,0
+      TaskValueSet data_4,pressuretrend3,0
     Endif
   Endif
   Event,calcsun=%latitude%,%longitude%,%unixtime% // Sun position and threshold for sunshine duration
@@ -125,10 +127,10 @@ On calcsun Do
     Let,declinaison,asin_d(0.006918-0.399912*(cos_d(%v_thetasd%))+0.070257*(sin_d(%v_thetasd%))-0.006758*(cos_d(2*%v_thetasd%))+0.000908*(sin_d(2*%v_thetasd%)))
     Let,anglehoraire,((%v_utcsec%/60+%eventvalue2%*4+%v_equatemps%)/60-12)*15 // Hour angle from solar time: minutes UTC + longitude correction + equation of time
     Let,hauteursoleil,asin_d((sin_d(%eventvalue1%))*(sin_d(%v_declinaison%))+(cos_d(%eventvalue1%))*(cos_d(%v_declinaison%))*(cos_d(%v_anglehoraire%)))
-    TaskValueSet data_5,sunelevation,%v_hauteursoleil%
+    TaskValueSet data_11,sunelevation,%v_hauteursoleil%
     Let,suny,-1*(sin_d(%v_anglehoraire%))
     Let,sunx,((tan_d(%v_declinaison%))*(cos_d(%eventvalue1%)))-((sin_d(%eventvalue1%))*(cos_d(%v_anglehoraire%)))
-    TaskValueSet data_2,sundirection,fmod((atan2_d(%v_suny%:%v_sunx%)+360):360) // Azimuth 0=N, 90=E, 180=S, 270=W
+    TaskValueSet data_11,sundirection,fmod((atan2_d(%v_suny%:%v_sunx%)+360):360) // Azimuth 0=N, 90=E, 180=S, 270=W
     If %v_hauteursoleil%>3
       Let,seuil,(0.73+%v_bcoeff%*(cos_d(%v_thetasd%)))*1080*((sin_d(%v_hauteursoleil%))^1.25)*%v_globcoeff%
     Else
@@ -143,7 +145,7 @@ On Rules#Timer=3 Do
   Event,EnableSensors
   // Save sum values to weatherlox webserver to save them for a power loss, currently there's no option in ESPEasy to save values
   If %v_savesumvalues%>0
-    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_2#solarradiation_daily]&sunduration_daily=[data_2#sunduration_daily]&windgust_maxdaily=[data_13#windgust_maxdaily]&windrun_daily=[data_13#windrun_daily]&rain_daily=[data_13#rain_daily]&rain_weekly=[data_13#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]"
+    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]"
   Endif
 Endon
 

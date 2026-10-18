@@ -45,12 +45,12 @@ Endon
 
 // Parse data from Open Meteo
 On OpenMeteo#current Do
-    TaskValueSet data_3,precipitationprob,%eventvalue1%
-    TaskValueSet data_3,visibility,%eventvalue2%/1000
-    TaskValueSet data_3,evapotranspiration,%eventvalue3%
-    TaskValueSet data_3,et0evapotranspiration,%eventvalue4%
-    TaskValueSet data_4,weathercode,%eventvalue5% // https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM
-    TaskValueSet data_4,cloudcover,%eventvalue6%
+    TaskValueSet data_13,precipitationprob,%eventvalue1%
+    TaskValueSet data_13,visibility,%eventvalue2%/1000
+    TaskValueSet data_13,evapotranspiration,%eventvalue3%
+    TaskValueSet data_13,et0evapotranspiration,%eventvalue4%
+    TaskValueSet data_12,weathercode,%eventvalue5% // https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM
+    TaskValueSet data_12,cloudcover,%eventvalue6%
 Endon
 
 // Parse data from JSON sources

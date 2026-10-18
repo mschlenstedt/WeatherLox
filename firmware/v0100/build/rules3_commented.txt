@@ -9,14 +9,14 @@ On input_1#All Do
     Let,rain_weekly,%v_rain_weekly%+%v_rainbucket%
     Let,rain_monthly,%v_rain_monthly%+%v_rainbucket%
     Let,rain_yearly,%v_rain_yearly%+%v_rainbucket%
-    TaskValueSet data_6,rain_event,%v_rain_event%
-    TaskValueSet data_6,rain_hourly,%v_rain_hourly%
-    TaskValueSet data_13,rain_daily,%v_rain_daily%
-    TaskValueSet data_13,rain_weekly,%v_rain_weekly%
+    TaskValueSet data_5,rain_event,%v_rain_event%
+    TaskValueSet data_5,rain_hourly,%v_rain_hourly%
+    TaskValueSet data_6,rain_daily,%v_rain_daily%
+    TaskValueSet data_6,rain_weekly,%v_rain_weekly%
     TaskValueSet data_6,rain_monthly,%v_rain_monthly%
     TaskValueSet data_6,rain_yearly,%v_rain_yearly%  
     If %unixtime%<(%v_rainratelast%+600)
-      TaskValueSet data_4,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600 // %v_rainbucket% mm per Pulse, converted to mm/h
+      TaskValueSet data_5,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600 // %v_rainbucket% mm per Pulse, converted to mm/h
     Endif
     Let,rainratelast,%unixtime%
   Endif
@@ -24,23 +24,23 @@ Endon
 
 // Calculate rain status (and rainrate < 1 mm/h)
 On input_2#All Do
-  TaskValueSet data_9,rainstate,%eventvalue1%
-  If %unixtime%>(%v_rainratelast%+600) And [data_4#rainrate]=0 // This maybe is the first apperance - so reset timer
+  TaskValueSet data_5,rainstate,%eventvalue1%
+  If %unixtime%>(%v_rainratelast%+600) And [data_5#rainrate]=0 // This maybe is the first apperance - so reset timer
     Let,rainratelast,%unixtime%
   Endif
-  If %eventvalue1%=1 And [data_4#rainrate]=0 // If we detect rain here but the bucket counter is still zero, set 0.5 mm/h here (minimum of bucket counter is 1.2 mm/h)
-    TaskValueSet data_4,rainrate,0.5
+  If %eventvalue1%=1 And [data_5#rainrate]=0 // If we detect rain here but the bucket counter is still zero, set 0.5 mm/h here (minimum of bucket counter is 1.2 mm/h)
+    TaskValueSet data_5,rainrate,0.5
   Endif
 Endon
 
 // Calculate Temp, Hum, Pressure - BMx280 Sensor
 On bmx280_1#All Do
-  TaskValueSet data_7,pressure_abs,%eventvalue3%
+  TaskValueSet data_3,pressure_abs,%eventvalue3%
   // Sea Level pressure (rel): // Formula from http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf, Page 17
   If %v_stationheight%>0
-    TaskValueSet data_9,pressure_rel,%c_sea_pres_alt%(%eventvalue3%,%v_stationheight%)
+    TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue3%,%v_stationheight%)
   Else
-    TaskValueSet data_9,pressure_rel,%eventvalue3%
+    TaskValueSet data_3,pressure_rel,%eventvalue3%
   Endif
   If [sht3x_1#settings.enabled]=0 // If no SHT3x Sensor is available
     Event,calctemps=%eventvalue1%,%eventvalue2%
@@ -56,25 +56,25 @@ Endon
 // %eventvalue1% = Temperature (°C), %eventvalue2% = rel. Humidity (%)
 // Formulas and limits as in FOSHKplugin
 On calctemps Do
-  TaskValueSet data_8,temperature,%eventvalue1%
-  TaskValueSet data_8,humidity,%eventvalue2%
+  TaskValueSet data_1,temperature,%eventvalue1%
+  TaskValueSet data_1,humidity,%eventvalue2%
   // Saturation vapour pressure and actual vapour pressure in kPa (Magnus formula, coefficients Alduchov-Eskridge)
   Let,svp,0.61094*exp((17.625*%eventvalue1%)/(%eventvalue1%+243.04))
   Let,vp,%v_svp%*%eventvalue2%/100
   // Absolute humidity in g/m³: 216.7 * vp(hPa) / T(K)
-  TaskValueSet data_5,humidity_abs,2167*%v_vp%/(%eventvalue1%+273.15)
-  TaskValueSet data_4,vapourpressuredeficit,%v_svp%-%v_vp%
+  TaskValueSet data_2,humidity_abs,2167*%v_vp%/(%eventvalue1%+273.15)
+  TaskValueSet data_2,vapourpressuredeficit,%v_svp%-%v_vp%
   // Dewpoint (Magnus formula, coefficients Alduchov-Eskridge)
   Let,magnus,(ln(%eventvalue2%/100))+(17.625*%eventvalue1%)/(%eventvalue1%+243.04) // ESPEasy: a function takes everything behind it - always wrap it in brackets
   Let,dewpoint,243.04*%v_magnus%/(17.625-%v_magnus%)
-  TaskValueSet data_7,dewpoint,%v_dewpoint%
+  TaskValueSet data_1,dewpoint,%v_dewpoint%
   // Height of Cloud Base above ground, Henningsche Formel, see https://www.dwd.de/DE/leistungen/pbfb_verlag_vub/pdf_einzelbaende/vub_16_gesamt_pdf.pdf?__blob=publicationFile&v=5
-  TaskValueSet data_2,cloudbase,(%eventvalue1%-%v_dewpoint%)*125
+  TaskValueSet data_3,cloudbase,(%eventvalue1%-%v_dewpoint%)*125
   // Windchill, https://www.windinfo.eu/windchill/ - Temp up to 10°C and Wind from 4.828 km/h (3 mph)
-  If %eventvalue1%<=10 And [data_10#windspeed_avg2m]>=4.828
-    TaskValueSet data_7,windchill,13.12+(0.6215*%eventvalue1%)-(11.37*[data_10#windspeed_avg2m]^0.16)+(0.3965*%eventvalue1%*[data_10#windspeed_avg2m]^0.16)
+  If %eventvalue1%<=10 And [data_7#windspeed_avg2m]>=4.828
+    TaskValueSet data_2,windchill,13.12+(0.6215*%eventvalue1%)-(11.37*[data_7#windspeed_avg2m]^0.16)+(0.3965*%eventvalue1%*[data_7#windspeed_avg2m]^0.16)
   Else
-    TaskValueSet data_7,windchill,%eventvalue1%
+    TaskValueSet data_2,windchill,%eventvalue1%
   Endif
   // Heat Index, https://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
   Let,tf,%c_c2f%(%eventvalue1%)
@@ -91,37 +91,52 @@ On calctemps Do
       Endif
     Endif
   Endif
-  TaskValueSet data_7,heatindex,(%v_heatindex%-32)*0.55555555 // Convert to C
+  TaskValueSet data_2,heatindex,(%v_heatindex%-32)*0.55555555 // Convert to C
   // Feelslike as in FOSHKplugin / Ecowitt: Windchill up to 10°C with wind, Heat Index from 80°F (26.7°C), otherwise temperature. NOT similar to DWD.
-  If %eventvalue1%<=10 And [data_10#windspeed_avg2m]>4.828
-    TaskValueSet data_5,feelslike,[data_7#windchill]
+  If %eventvalue1%<=10 And [data_7#windspeed_avg2m]>4.828
+    TaskValueSet data_1,feelslike,[data_2#windchill]
   Elseif %v_tf%>=80
-    TaskValueSet data_5,feelslike,[data_7#heatindex]
+    TaskValueSet data_1,feelslike,[data_2#heatindex]
   Else
-    TaskValueSet data_5,feelslike,%eventvalue1%
+    TaskValueSet data_1,feelslike,%eventvalue1%
+  Endif
+Endon
+
+// Lightning - AS3935 Sensor (ESPEasy P169), event every task interval:
+// %eventvalue1% = distance near (km), %eventvalue2% = distance far (km), %eventvalue3% = strikes since last read, %eventvalue4% = strikes since boot
+On as3935_1#All Do
+  If %eventvalue3%>0
+    Let,lightningdist,%eventvalue1% // Distance of the nearest strike: the smaller of both values
+    If %eventvalue2%<%v_lightningdist%
+      Let,lightningdist,%eventvalue2%
+    Endif
+    TaskValueSet data_12,lightning,%v_lightningdist%
+    TaskValueSet data_15,lightning_time,%unixtime%
+    Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
+    TaskValueSet data_12,lightning_daily,%v_lightning_daily%
   Endif
 Endon
 
 // Calculate Illuminance
 On veml7700_1#All Do
-  TaskValueSet data_1,illuminance,%eventvalue1%
+  TaskValueSet data_10,illuminance,%eventvalue1%
 Endon
 
 // Calculate Solar Radiation
 On ina219_1#All Do
   If %eventvalue1%<0.0005 // sometimes slightly negativ or small values due to offset
-      TaskValueSet data_1,solarradiation,0
+      TaskValueSet data_10,solarradiation,0
   Else
-    TaskValueSet data_1,solarradiation,%eventvalue1%*1792.1147 // (%eventvalue1%*1000/558)*1000 - Short circuit current (mA): 558 mA at 1000 W/m^2
+    TaskValueSet data_10,solarradiation,%eventvalue1%*1792.1147 // (%eventvalue1%*1000/558)*1000 - Short circuit current (mA): 558 mA at 1000 W/m^2
   Endif
-  Let,solarradiation_daily,(%v_solarradiation_daily%+([data_1#solarradiation]*[ina219_1#settings.interval]/3600)) // Wh/m² - one value per task interval (s)
-  TaskValueSet data_2,solarradiation_daily,%v_solarradiation_daily%
-  If [data_1#solarradiation]>%v_seuil% And [data_1#solarradiation]>%v_sunmin% // Like FOSHKplugin: above threshold seuil (Rules 4, calcsun; 0 below 3° sun elevation) and above sunmin
-    TaskValueSet data_11,sunshine,1
+  Let,solarradiation_daily,(%v_solarradiation_daily%+([data_10#solarradiation]*[ina219_1#settings.interval]/3600)) // Wh/m² - one value per task interval (s)
+  TaskValueSet data_11,solarradiation_daily,%v_solarradiation_daily%
+  If [data_10#solarradiation]>%v_seuil% And [data_10#solarradiation]>%v_sunmin% // Like FOSHKplugin: above threshold seuil (Rules 4, calcsun; 0 below 3° sun elevation) and above sunmin
+    TaskValueSet data_9,sunshine,1
     Let,sunduration_daily,(%v_sunduration_daily%+([ina219_1#settings.interval]/3600)) // h
-    TaskValueSet data_2,sunduration_daily,%v_sunduration_daily%
+    TaskValueSet data_11,sunduration_daily,%v_sunduration_daily%
   Else
-    TaskValueSet data_11,sunshine,0
+    TaskValueSet data_9,sunshine,0
   Endif
 Endon
 
@@ -129,37 +144,37 @@ Endon
 On ads1115_1#All Do
   // Twilight
   Let,twilight,%eventvalue1%/0.0325 // /3.25*100
-  TaskValueSet data_1,twilight,{constrain:%v_twilight%:0:100} // 3.3V (real: 3.25V) is absolute darkness = 100%
+  TaskValueSet data_10,twilight,{constrain:%v_twilight%:0:100} // 3.3V (real: 3.25V) is absolute darkness = 100%
   
   // UVI
-  TaskValueSet data_1,uvi,%eventvalue2%/0.1 // 1V = UVI 10. Steps in 0.1V
+  TaskValueSet data_10,uvi,%eventvalue2%/0.1 // 1V = UVI 10. Steps in 0.1V
   
   // Wind Measures - Save
   TaskValueSet internal_1,int_random,%c_random%(0, 1) // Force the Statistics to be updated
   TaskValueSet internal_1,int_windspeed,mapc(%eventvalue3%:0.005:2.990:0:60)*3.6 // 2.99V maximum, 60 m/s
-  TaskValueSet data_10,windspeed,[internal_1#int_windspeed]
+  TaskValueSet data_7,windspeed,[internal_1#int_windspeed]
   If %v_winddirsensor%=1
-    TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.809:0:315) // For 8-Point-Sensor
+    TaskValueSet data_8,winddir,mapc(%eventvalue4%:0.005:2.809:0:315) // For 8-Point-Sensor
   Else
-    TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.99:0:359) // For 0-360° Sensor
+    TaskValueSet data_8,winddir,mapc(%eventvalue4%:0.005:2.99:0:359) // For 0-360° Sensor
   Endif
-  TaskValueSet internal_1,int_winddir_x,cos_d([data_11#winddir])
-  TaskValueSet internal_1,int_winddir_y,sin_d([data_11#winddir]) // ....and Run to Save the stats
+  TaskValueSet internal_1,int_winddir_x,cos_d([data_8#winddir])
+  TaskValueSet internal_1,int_winddir_y,sin_d([data_8#winddir]) // ....and Run to Save the stats
   TaskRun internal_1
   // Wind Speed AVG and Max - avg24/avg120 assume a task interval of 5 s (24 values = 2 min, 120 values = 10 min)
-  TaskValueSet data_10,windspeed_avg2m,[internal_1#int_windspeed.avg24]  // Average of windspeed - every 5 sec a value. 2 Min AVG
-  TaskValueSet data_10,windspeed_avg10m,[internal_1#int_windspeed.avg120] // Average of windspeed - every 5 sec a value. 10 Min AVG
-  TaskValueSet data_10,windgust_max2m,[internal_1#int_windspeed.max24] // Max of windspeed - every 5 sec a value. 2 Min MAX
-  TaskValueSet data_12,windgust_max10m,[internal_1#int_windspeed.max120]  // Max of windspeed - every 5 sec a value. 10 Min MAX
-  TaskValueSet data_5,beaufort,%c_ms2Bft%([data_10#windspeed_avg2m]/3.6)
-  If [data_10#windspeed]>[data_13#windgust_maxdaily] // Setting daily maximum
-    TaskValueSet data_13,windgust_maxdaily,[data_10#windspeed]
+  TaskValueSet data_7,windspeed_avg2m,[internal_1#int_windspeed.avg24]  // Average of windspeed - every 5 sec a value. 2 Min AVG
+  TaskValueSet data_7,windspeed_avg10m,[internal_1#int_windspeed.avg120] // Average of windspeed - every 5 sec a value. 10 Min AVG
+  TaskValueSet data_7,windgust_max2m,[internal_1#int_windspeed.max24] // Max of windspeed - every 5 sec a value. 2 Min MAX
+  TaskValueSet data_8,windgust_max10m,[internal_1#int_windspeed.max120]  // Max of windspeed - every 5 sec a value. 10 Min MAX
+  TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
+  If [data_7#windspeed]>[data_9#windgust_maxdaily] // Setting daily maximum
+    TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
   Endif
   Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]*[ads1115_1#settings.interval]/3600)) // km - one value per task interval (s)
-  TaskValueSet data_13,windrun_daily,%v_windrun_daily%
+  TaskValueSet data_9,windrun_daily,%v_windrun_daily%
   // Winddirection AVG: vector mean like FOSHKplugin avgWind - every 5 sec a value, avg24 = 2 min, avg120 = 10 min
   // ESPEasy bug (mega-20260720): 2-argument functions (atan2_d, fmod) need brackets around the whole call and around
   // a calculated first argument, otherwise operators get lost: 360+atan2_d(-1:-1) = -135, fmod(5+5:3) = 5
-  TaskValueSet data_11,winddir_avg2m,fmod((atan2_d([internal_1#int_winddir_y.avg24]:[internal_1#int_winddir_x.avg24])+360):360)
-  TaskValueSet data_11,winddir_avg10m,fmod((atan2_d([internal_1#int_winddir_y.avg120]:[internal_1#int_winddir_x.avg120])+360):360)
+  TaskValueSet data_8,winddir_avg2m,fmod((atan2_d([internal_1#int_winddir_y.avg24]:[internal_1#int_winddir_x.avg24])+360):360)
+  TaskValueSet data_8,winddir_avg10m,fmod((atan2_d([internal_1#int_winddir_y.avg120]:[internal_1#int_winddir_x.avg120])+360):360)
 Endon
