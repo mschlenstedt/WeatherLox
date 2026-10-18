@@ -143,9 +143,26 @@ Endon
 On Rules#Timer=3 Do
   // Try to enable tasks for I2C sensors again in case they were lost (Rules 2)
   Event,EnableSensors
-  // Save sum values to weatherlox webserver to save them for a power loss, currently there's no option in ESPEasy to save values
+  // Requests to web services that are repeated until they got an answer (first run right after WiFi#Connected, Rules 2)
+  // Station height from Open Meteo, if not set manually in Rules 1
+  If %v_stationheight%=0
+    SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
+  Endif
+  // Passkey for the Ecowitt format, if enabled - ESPEasy cannot calculate MD5 checksums
+  If [data_1#settings.controller3.enabled]>0 And %v_passkeyok%<1
+    SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
+  Endif
+  // Sum values: restore them from the weatherlox webserver after a restart, then save them every 5 minutes (for a power loss)
   If %v_savesumvalues%>0
-    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]&lightning_daily=[data_15#lightning_daily]"
+    If %v_sumsok%<1 And %uptime%>15
+      Let,sumsok,1 // No answer from the server for 15 minutes: stop trying to restore and start saving
+    Endif
+    If %v_sumsok%<1
+      // Do not save before the restore, it would overwrite the saved values
+      SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+    Else
+      SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]&lightning_daily=[data_15#lightning_daily]"
+    Endif
   Endif
 Endon
 

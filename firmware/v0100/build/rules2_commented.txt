@@ -10,26 +10,12 @@ on WiFi#Connected Do
   // Now we're enabling tasks for I2C sensors as they may have been disabled when not found
   Event,EnableSensors
 
-  // Restore sum values from weatherlox webserver, currently there's no option in ESPEasy to save values
-  // Only first time after cold reboot
-  If %v_savesumvalues%>0 And %v_sumvaluesset%<1
-    SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
-  Endif
-  Let,sumvaluesset,1
   // Start Timer for some quarterly tasks / events
   LoopTimerSetAndRun,1,900
   // Start Timer for some 5 seconds tasks / events
   LoopTimerSetAndRun,2,5
-  // Start Timer for some 5 minutes tasks / events
+  // Start Timer for some 5 minutes tasks / events - also requests station height, Ecowitt passkey and saved sum values (Rules 4)
   LoopTimerSetAndRun,3,300
-  // Get station height from Open Meteo if not set here in the rules manually
-  If %v_stationheight%=0
-    SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
-  Endif
-  // Get passkey for Ecowitt Format for our mac address if enabled - ESPEasy cannot calculate MD5 checksums
-  If [data_1#settings.controller3.enabled]>0
-    SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
-  Endif
 Endon
 
 // Enable tasks for I2C sensors - ESPEasy disables a task if the sensor is not found at startup
@@ -71,6 +57,7 @@ Endon
 // %eventvalue1-9% = solarradiation_daily, sunduration_daily, windgust_maxdaily, windrun_daily, rain_daily, rain_weekly, rain_monthly, rain_yearly, lightning_daily
 // %eventvalue10% = timestamp of the last save (unixtime UTC, set by the server), "null" if there is no saved data
 On restoresums Do
+  Let,sumsok,1 // Restore done (also if there is no saved data), saving to the server may start (Rules 4)
   Let,savedts,0
   Let,savedts,%eventvalue10% // Fails for "null" and savedts stays 0 (a string comparison with null would be true)
   If %v_savedts%>0
@@ -112,6 +99,7 @@ On JsonReply* Do
     Let,stationheight,%eventvalue1%
   Elseif %eventpar%=2 // Passkey for Ecowitt
     LetStr,ecowittpasskey,%eventvalue1%
+    Let,passkeyok,1
   Elseif %eventpar%=3 // Saved sum values from server (order as in json.keys)
     Event,restoresums=%eventvalue1%,%eventvalue2%,%eventvalue3%,%eventvalue4%,%eventvalue5%,%eventvalue6%,%eventvalue7%,%eventvalue8%,%eventvalue9%,%eventvalue10%
   Endif
