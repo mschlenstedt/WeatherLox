@@ -1,0 +1,30 @@
+--- a/src/src/Helpers/Networking.cpp
++++ b/src/src/Helpers/Networking.cpp
+@@ -1987,7 +1987,12 @@
+     unsigned long timeout = millis() + DOWNLOAD_FILE_TIMEOUT;
+ 
+     // get tcp stream
+-    WiFiClient *stream = &client;
++    // With FEATURE_TLS the HTTPClient uses its own client, so read from the stream the HTTPClient actually uses
++    WiFiClient *stream = http.getStreamPtr();
++
++    if (stream == nullptr) {
++      stream = &client;
++    }
+ 
+     // read all data from server
+     while (http.connected() && (len > 0 || len == -1)) {
+@@ -2086,7 +2091,12 @@
+     unsigned long timeout = millis() + DOWNLOAD_FILE_TIMEOUT;
+ 
+     // get tcp stream
+-    WiFiClient *stream = &client;
++    // With FEATURE_TLS the HTTPClient uses its own client, so read from the stream the HTTPClient actually uses
++    WiFiClient *stream = http.getStreamPtr();
++
++    if (stream == nullptr) {
++      stream = &client;
++    }
+ 
+     while (error.isEmpty() && http.connected() && (len > 0 || len == -1)) {
+       // read up to downloadBuffSize at a time.
