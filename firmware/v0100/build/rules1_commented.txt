@@ -10,7 +10,7 @@ On System#Boot Do
   // Set Coefficients for calculating sun duration!
   // Note: Explanation: https://github.com/Jterrettaz/sunduration
   // Note: globcoeff 0.92 for germany. Too little sunshine recorded: decrease value; too much sunshine recorded: increase value)
-  // Note: bcoeff 0.65 default value
+  // Note: bcoeff 0.06 default value
   Let,globcoeff,0.92
   Let,bcoeff,0.06
   //

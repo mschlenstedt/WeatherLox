@@ -116,7 +116,7 @@ On ina219_1#All Do
   Endif
   Let,solarradiation_daily,(%v_solarradiation_daily%+([data_1#solarradiation]*5/3600)) // Wh/m²
   TaskValueSet data_2,solarradiation_daily,%v_solarradiation_daily%
-  If [data_1#solarradiation]>%v_seuil% And %v_seuil%>0 // seuil is caluclated in Rules 1
+  If [data_1#solarradiation]>%v_seuil% And %v_seuil%>0 // seuil is calculated in Rules 4 (calcsun)
     TaskValueSet data_11,sunshine,1
     Let,sunduration_daily,(%v_sunduration_daily%+(5/3600)) // h
     TaskValueSet data_2,sunduration_daily,%v_sunduration_daily%
