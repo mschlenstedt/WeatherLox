@@ -50,7 +50,7 @@ Endon
 
 // The server answers HTTP 226 if there are newer Rules, else 204
 On checkupdate Do
-  SendToHTTP,webservices.weatherlox.de,80,"provisioning/v0100/check.php?v2=%v_rv2%&v3=%v_rv3%&v4=%v_rv4%"
+  SendToHTTP,webservices.weatherlox.de,80,"check_rules.php?v2=%v_rv2%&v3=%v_rv3%&v4=%v_rv4%"
 Endon
 
 On http#webservices.weatherlox.de=226 Do
