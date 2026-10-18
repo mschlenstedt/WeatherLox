@@ -44,13 +44,26 @@ On EnableSensors Do
 Endon
 
 // Parse data from Open Meteo
+// ESPEasy sets -256 for every value missing in the response (e.g. "503 service overloaded"): keep the last valid value
 On OpenMeteo#current Do
+  If %eventvalue1%!=-256
     TaskValueSet data_13,precipitationprob,%eventvalue1%
+  Endif
+  If %eventvalue2%!=-256
     TaskValueSet data_13,visibility,%eventvalue2%/1000
+  Endif
+  If %eventvalue3%!=-256
     TaskValueSet data_13,evapotranspiration,%eventvalue3%
+  Endif
+  If %eventvalue4%!=-256
     TaskValueSet data_13,et0evapotranspiration,%eventvalue4%
+  Endif
+  If %eventvalue5%!=-256
     TaskValueSet data_12,weathercode,%eventvalue5% // https://www.nodc.noaa.gov/archive/arc0021/0002199/1.1/data/0-data/HTML/WMO-CODE/WMO4677.HTM
+  Endif
+  If %eventvalue6%!=-256
     TaskValueSet data_12,cloudcover,%eventvalue6%
+  Endif
 Endon
 
 // Restore sum values after power loss - only values from the current day / week / month / year
