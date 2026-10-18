@@ -1,0 +1,18 @@
+# Line endings: LF in the repository, native line endings in the working copy (CRLF on Windows)
+* text=auto
+
+# Must stay byte-identical
+*.patch   -text
+json.keys -text
+
+# Binary files
+*.bin   binary
+*.dat   binary
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+*.stl   binary
+*.f3d   binary
+*.fzz   binary
+*.blend binary
+*.lnk   binary
