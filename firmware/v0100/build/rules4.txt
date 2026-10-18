@@ -1,6 +1,6 @@
-// V1.1.1_min - 18.10.2026
+// V1.1.2_min - 18.10.2026
 On version4 Do
-Let,rv4,10101
+Let,rv4,10102
 Endon
 On Rules#Timer=2 Do
 If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0

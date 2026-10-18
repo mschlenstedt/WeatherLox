@@ -1,8 +1,8 @@
-// V1.1.1 - 18.10.2026
+// V1.1.2 - 18.10.2026
 
 // Version of Rules 3 for the automatic update (Rules 1) - must match the version in the first line
 On version3 Do
-  Let,rv3,10101
+  Let,rv3,10102
 Endon
 
 // Calculate rainrate
@@ -59,9 +59,13 @@ Endon
 // Absolute and relative (sea level) air pressure: %eventvalue1% = absolute pressure (hPa)
 On calcpressure Do
   TaskValueSet data_3,pressure_abs,%eventvalue1%
-  // Sea Level pressure (rel): // Formula from http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf, Page 17
+  // Sea level pressure (rel) as QFF like the DWD: Leitfaden Nr. 6 "Flugmeteorologie", formula 7.3, page 25,
+  // https://www.dwd.de/DE/leistungen/pbfb_verlag_leitfaeden/pdf_einzelbaende/leitfaden6_pdf.pdf?__blob=publicationFile&v=3
+  // QFF = p * exp((H*gn/RL) / (T + e*Ch + a*H/2)) - gn 9.80665, RL 287.058, a 0.0065 K/m, Ch 0.12 K/hPa,
+  // H = station height (m), T = temperature (K), e = vapour pressure (hPa, vp from calctemps is in kPa)
   If %v_stationheight%>0
-    TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue1%,%v_stationheight%)
+    Let,qff,(%v_stationheight%*9.80665/287.058)/(273.15+[data_1#temperature]+0.12*%v_vp%*10+0.0065*%v_stationheight%/2)
+    TaskValueSet data_3,pressure_rel,%eventvalue1%*(exp(%v_qff%)) // ESPEasy: a function takes everything behind it - always wrap it in brackets
   Else
     TaskValueSet data_3,pressure_rel,%eventvalue1%
   Endif

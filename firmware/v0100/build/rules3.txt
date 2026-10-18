@@ -1,6 +1,6 @@
-// V1.1.1_min - 18.10.2026
+// V1.1.2_min - 18.10.2026
 On version3 Do
-Let,rv3,10101
+Let,rv3,10102
 Endon
 On input_1#All Do
 If %eventvalue1%=1
@@ -46,7 +46,8 @@ Endon
 On calcpressure Do
 TaskValueSet data_3,pressure_abs,%eventvalue1%
 If %v_stationheight%>0
-TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue1%,%v_stationheight%)
+Let,qff,(%v_stationheight%*9.80665/287.058)/(273.15+[data_1#temperature]+0.12*%v_vp%*10+0.0065*%v_stationheight%/2)
+TaskValueSet data_3,pressure_rel,%eventvalue1%*(exp(%v_qff%))
 Else
 TaskValueSet data_3,pressure_rel,%eventvalue1%
 Endif
