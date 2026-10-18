@@ -53,13 +53,52 @@ On OpenMeteo#current Do
     TaskValueSet data_12,cloudcover,%eventvalue6%
 Endon
 
+// Restore sum values after power loss - only values from the current day / week / month / year
+// %eventvalue1-9% = solarradiation_daily, sunduration_daily, windgust_maxdaily, windrun_daily, rain_daily, rain_weekly, rain_monthly, rain_yearly, lightning_daily
+// %eventvalue10% = timestamp of the last save (unixtime UTC, set by the server), "null" if there is no saved data
+On restoresums Do
+  Let,savedts,0
+  Let,savedts,%eventvalue10% // Fails for "null" and savedts stays 0 (a string comparison with null would be true)
+  If %v_savedts%>0
+    Let,daystart,%unixtime%-%syssec_d% // Today 0:00 local time
+    Let,weekstart,%v_daystart%-((%sysweekday%+5)%7)*86400 // Monday 0:00 (%sysweekday%: 1=Sunday, 2=Monday)
+    Let,monthstart,%v_daystart%-(%sysday%-1)*86400 // 1st of month 0:00
+    Let,yearstart,(((%sysyear%-1970)*365+((%sysyear%-1969-((%sysyear%-1969)%4))/4))*86400)-%systzoffset_s% // 1st January 0:00
+    If %v_savedts%>=%v_daystart%
+      Let,solarradiation_daily,%eventvalue1%
+      TaskValueSet data_11,solarradiation_daily,%eventvalue1%
+      Let,sunduration_daily,%eventvalue2%
+      TaskValueSet data_11,sunduration_daily,%eventvalue2%
+      TaskValueSet data_9,windgust_maxdaily,%eventvalue3%
+      Let,windrun_daily,%eventvalue4%
+      TaskValueSet data_9,windrun_daily,%eventvalue4%
+      Let,rain_daily,%eventvalue5%
+      TaskValueSet data_6,rain_daily,%eventvalue5%
+      Let,lightning_daily,%eventvalue9%
+      TaskValueSet data_15,lightning_daily,%eventvalue9%
+    Endif
+    If %v_savedts%>=%v_weekstart%
+      Let,rain_weekly,%eventvalue6%
+      TaskValueSet data_6,rain_weekly,%eventvalue6%
+    Endif
+    If %v_savedts%>=%v_monthstart%
+      Let,rain_monthly,%eventvalue7%
+      TaskValueSet data_6,rain_monthly,%eventvalue7%
+    Endif
+    If %v_savedts%>=%v_yearstart%
+      Let,rain_yearly,%eventvalue8%
+      TaskValueSet data_6,rain_yearly,%eventvalue8%
+    Endif
+  Endif
+Endon
+
 // Parse data from JSON sources
 On JsonReply* Do
   If %eventpar%=1 // Station height for pressure calculations
     Let,stationheight,%eventvalue1%
   Elseif %eventpar%=2 // Passkey for Ecowitt
     LetStr,ecowittpasskey,%eventvalue1%
-  Elseif %eventpar%=3 // Get saved data from server
-    //LetStr,passkey,%eventvalue1%
+  Elseif %eventpar%=3 // Saved sum values from server (order as in json.keys)
+    Event,restoresums=%eventvalue1%,%eventvalue2%,%eventvalue3%,%eventvalue4%,%eventvalue5%,%eventvalue6%,%eventvalue7%,%eventvalue8%,%eventvalue9%,%eventvalue10%
   Endif
 Endon

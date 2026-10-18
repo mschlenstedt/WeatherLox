@@ -145,7 +145,7 @@ On Rules#Timer=3 Do
   Event,EnableSensors
   // Save sum values to weatherlox webserver to save them for a power loss, currently there's no option in ESPEasy to save values
   If %v_savesumvalues%>0
-    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]"
+    SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]&lightning_daily=[data_15#lightning_daily]"
   Endif
 Endon
 
