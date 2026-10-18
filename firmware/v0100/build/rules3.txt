@@ -1,4 +1,7 @@
-// V1.0.2_min - 17.01.2026
+// V1.1.0_min - 18.10.2026
+On version3 Do
+Let,rv3,10100
+Endon
 On input_1#All Do
 If %eventvalue1%=1
 Let,rain_event,%v_rain_event%+%v_rainbucket%
@@ -7,149 +10,145 @@ Let,rain_daily,%v_rain_daily%+%v_rainbucket%
 Let,rain_weekly,%v_rain_weekly%+%v_rainbucket%
 Let,rain_monthly,%v_rain_monthly%+%v_rainbucket%
 Let,rain_yearly,%v_rain_yearly%+%v_rainbucket%
-TaskValueSet data_6,rain_event,%v_rain_event%
-TaskValueSet data_6,rain_hourly,%v_rain_hourly%
-TaskValueSet data_13,rain_daily,%v_rain_daily%
-TaskValueSet data_13,rain_weekly,%v_rain_weekly%
+TaskValueSet data_5,rain_event,%v_rain_event%
+TaskValueSet data_5,rain_hourly,%v_rain_hourly%
+TaskValueSet data_6,rain_daily,%v_rain_daily%
+TaskValueSet data_6,rain_weekly,%v_rain_weekly%
 TaskValueSet data_6,rain_monthly,%v_rain_monthly%
 TaskValueSet data_6,rain_yearly,%v_rain_yearly%
 If %unixtime%<(%v_rainratelast%+600)
-TaskValueSet data_4,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600
+TaskValueSet data_5,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600
 Endif
 Let,rainratelast,%unixtime%
 Endif
 Endon
 On input_2#All Do
-TaskValueSet data_9,rainstate,%eventvalue1%
-If %unixtime%>(%v_rainratelast%+600) And [data_4#rainrate]=0
+TaskValueSet data_5,rainstate,%eventvalue1%
+If %unixtime%>(%v_rainratelast%+600) And [data_5#rainrate]=0
 Let,rainratelast,%unixtime%
 Endif
-If %eventvalue1%=1 And [data_4#rainrate]=0
-TaskValueSet data_4,rainrate,0.5
+If %eventvalue1%=1 And [data_5#rainrate]=0
+TaskValueSet data_5,rainrate,0.5
 Endif
 Endon
 On bmx280_1#All Do
-TaskValueSet data_7,pressure_abs,%eventvalue3%
-If %v_stationheight%>0
-TaskValueSet data_9,pressure_rel,%c_sea_pres_alt%(%eventvalue3%,%v_stationheight%)
-Else
-TaskValueSet data_9,pressure_rel,%eventvalue3%
+If %unixtime%-%v_bmp58xlast%>120
+Event,calcpressure=%eventvalue3%
 Endif
-If [sht3x_1#settings.enabled]=0
-TaskValueSet data_8,temperature,%eventvalue1%
-TaskValueSet data_8,humidity,%eventvalue2%
+If [sht3x_1#settings.enabled]=0 And %eventvalue2%>0
 Event,calctemps=%eventvalue1%,%eventvalue2%
+Endif
+Endon
+On bmp58x_1#All Do
+Let,bmp58xlast,%unixtime%
+Event,calcpressure=%eventvalue2%
+Endon
+On calcpressure Do
+TaskValueSet data_3,pressure_abs,%eventvalue1%
+If %v_stationheight%>0
+TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue1%,%v_stationheight%)
+Else
+TaskValueSet data_3,pressure_rel,%eventvalue1%
 Endif
 Endon
 On sht3x_1#All Do
-TaskValueSet data_8,temperature,%eventvalue1%
-TaskValueSet data_8,humidity,%eventvalue2%
 Event,calctemps=%eventvalue1%,%eventvalue2%
 Endon
-On calctemps do
-TaskValueSet data_5,humidity_abs,(%eventvalue2%/100)*(5.018+(0.32321*%eventvalue1%)+(0.0081847*%eventvalue1%^2)+(0.00031243**%eventvalue1%^3))
-TaskValueSet data_4,vapourpressuredeficit,(0.6108*exp((17.27*%eventvalue1%)/(%eventvalue1%+237.3)))-((0.6108*exp((17.27*%eventvalue1%)/(%eventvalue1%+237.3)))*(%eventvalue2%/100))
-TaskValueSet data_7,dewpoint,%c_dew_th%(%eventvalue1%,%eventvalue2%)
-TaskValueSet data_2,cloudbase,(%eventvalue1%-[data_7#dewpoint])*125
-If %eventvalue1%<10 And [data_10#windspeed_avg2m]>5
-TaskValueSet data_7,windchill,13.12+(0.6215*%eventvalue1%)-(11.37*[data_10#windspeed_avg2m]^0.16)+(0.3965*%eventvalue1%*[data_10#windspeed_avg2m]^0.16)
+On calctemps Do
+TaskValueSet data_1,temperature,%eventvalue1%
+TaskValueSet data_1,humidity,%eventvalue2%
+Let,svp,0.61094*exp((17.625*%eventvalue1%)/(%eventvalue1%+243.04))
+Let,vp,%v_svp%*%eventvalue2%/100
+TaskValueSet data_2,humidity_abs,2167*%v_vp%/(%eventvalue1%+273.15)
+TaskValueSet data_2,vapourpressuredeficit,%v_svp%-%v_vp%
+Let,magnus,(ln(%eventvalue2%/100))+(17.625*%eventvalue1%)/(%eventvalue1%+243.04)
+Let,dewpoint,243.04*%v_magnus%/(17.625-%v_magnus%)
+TaskValueSet data_1,dewpoint,%v_dewpoint%
+TaskValueSet data_3,cloudbase,(%eventvalue1%-%v_dewpoint%)*125
+If %eventvalue1%<=10 And [data_7#windspeed_avg2m]>=4.828
+TaskValueSet data_2,windchill,13.12+(0.6215*%eventvalue1%)-(11.37*[data_7#windspeed_avg2m]^0.16)+(0.3965*%eventvalue1%*[data_7#windspeed_avg2m]^0.16)
 Else
-TaskValueSet data_7,windchill,%eventvalue1%
+TaskValueSet data_2,windchill,%eventvalue1%
 Endif
-If %c_c2f%(%eventvalue1%)<80
-Let,heatindex,0.5*(%c_c2f%(%eventvalue1%)+61.0+((%c_c2f%(%eventvalue1%)-68.0)*1.2)+(%eventvalue2%*0.094))
-Endif
-If %v_heatindex%>80
-Let,heatindex,-42.379+2.04901523*%c_c2f%(%eventvalue1%)+10.14333127*%eventvalue2%-0.22475541*%c_c2f%(%eventvalue1%)*%eventvalue2%-0.00683783*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)-0.05481717*%eventvalue2%*%eventvalue2%+0.00122874*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)*%eventvalue2%+0.00085282*%c_c2f%(%eventvalue1%)*%eventvalue2%*%eventvalue2%-0.00000199*%c_c2f%(%eventvalue1%)*%c_c2f%(%eventvalue1%)*%eventvalue2%*%eventvalue2%
+Let,tf,%c_c2f%(%eventvalue1%)
+Let,heatindex,0.5*(%v_tf%+61+((%v_tf%-68)*1.2)+(%eventvalue2%*0.094))
+If %v_heatindex%>=80
+Let,heatindex,-42.379+2.04901523*%v_tf%+10.14333127*%eventvalue2%-0.22475541*%v_tf%*%eventvalue2%-0.00683783*%v_tf%^2-0.05481717*%eventvalue2%^2+0.00122874*%v_tf%^2*%eventvalue2%+0.00085282*%v_tf%*%eventvalue2%^2-0.00000199*%v_tf%^2*%eventvalue2%^2
 If %eventvalue2%<13
-If %c_c2f%(%eventvalue1%)>80 And %c_c2f%(%eventvalue1%)<112
-Let,heatindex,%v_heatindex%-((13-%eventvalue2%)/4)*sqrt((17-abs(%c_c2f%(%eventvalue1%)-95))/17)
+If %v_tf%>=80 And %v_tf%<=112
+Let,heatindex,%v_heatindex%-((13-%eventvalue2%)/4)*sqrt((17-abs(%v_tf%-95))/17)
 Endif
 Elseif %eventvalue2%>85
-If %c_c2f%(%eventvalue1%)>80 And %c_c2f%(%eventvalue1%)<87
-Let,heatindex,%v_heatindex%+(((%eventvalue2%-85)/10)*((87-%c_c2f%(%eventvalue1%))/5)
+If %v_tf%>=80 And %v_tf%<=87
+Let,heatindex,%v_heatindex%+((%eventvalue2%-85)/10)*((87-%v_tf%)/5)
 Endif
 Endif
 Endif
-TaskValueSet data_7,heatindex,(%v_heatindex%-32)*0.55555555
-If %eventvalue1%<10 And [data_10#windspeed_avg2m]>5
-TaskValueSet data_5,feelslike,[data_7#windchill]
-Elseif [data_7#heatindex]<%eventvalue1%
-TaskValueSet data_5,feelslike,%eventvalue1%
+TaskValueSet data_2,heatindex,(%v_heatindex%-32)*0.55555555
+If %eventvalue1%<=10 And [data_7#windspeed_avg2m]>4.828
+TaskValueSet data_1,feelslike,[data_2#windchill]
+Elseif %v_tf%>=80
+TaskValueSet data_1,feelslike,[data_2#heatindex]
 Else
-TaskValueSet data_5,feelslike,[data_7#heatindex]
+TaskValueSet data_1,feelslike,%eventvalue1%
+Endif
+Endon
+On as3935_1#All Do
+If %eventvalue3%>0
+Let,lightningdist,%eventvalue1%
+If %eventvalue2%<%v_lightningdist%
+Let,lightningdist,%eventvalue2%
+Endif
+TaskValueSet data_15,lightning,%v_lightningdist%
+TaskValueSet data_15,lightning_time,%unixtime%
+Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
+TaskValueSet data_15,lightning_daily,%v_lightning_daily%
 Endif
 Endon
 On veml7700_1#All Do
-TaskValueSet data_1,illuminance,%eventvalue1%
+TaskValueSet data_10,illuminance,%eventvalue1%
 Endon
 On ina219_1#All Do
 If %eventvalue1%<0.0005
-TaskValueSet data_1,solarradiation,0
+TaskValueSet data_10,solarradiation,0
 Else
-TaskValueSet data_1,solarradiation,%eventvalue1%*1792.1147
+TaskValueSet data_10,solarradiation,%eventvalue1%*1792.1147
 Endif
-Let,solarradiation_daily,(%v_solarradiation_daily%+([data_1#solarradiation]*5/3600))
-TaskValueSet data_2,solarradiation_daily,%v_solarradiation_daily%
-If [data_1#solarradiation]>%v_seuil% And %v_seuil%>0
-TaskValueSet data_11,sunshine,1
-Let,sunduration_daily,(%v_sunduration_daily%+(5/3600))
-TaskValueSet data_2,sunduration_daily,%v_sunduration_daily%
+Let,solarradiation_daily,(%v_solarradiation_daily%+([data_10#solarradiation]*[ina219_1#settings.interval]/3600))
+TaskValueSet data_11,solarradiation_daily,%v_solarradiation_daily%
+If [data_10#solarradiation]>%v_seuil% And [data_10#solarradiation]>%v_sunmin%
+TaskValueSet data_9,sunshine,1
+Let,sunduration_daily,(%v_sunduration_daily%+([ina219_1#settings.interval]/3600))
+TaskValueSet data_11,sunduration_daily,%v_sunduration_daily%
 Else
-TaskValueSet data_11,sunshine,0
+TaskValueSet data_9,sunshine,0
 Endif
 Endon
 On ads1115_1#All Do
 Let,twilight,%eventvalue1%/0.0325
-TaskValueSet data_1,twilight,{constrain:%v_twilight%:0:100}
-TaskValueSet data_1,uvi,%eventvalue2%/0.1
+TaskValueSet data_10,twilight,{constrain:%v_twilight%:0:100}
+TaskValueSet data_10,uvi,%eventvalue2%/0.1
 TaskValueSet internal_1,int_random,%c_random%(0, 1)
 TaskValueSet internal_1,int_windspeed,mapc(%eventvalue3%:0.005:2.990:0:60)*3.6
-TaskValueSet data_10,windspeed,[internal_1#int_windspeed]
+TaskValueSet data_7,windspeed,[internal_1#int_windspeed]
 If %v_winddirsensor%=1
-TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.809:0:315)
+TaskValueSet data_8,winddir,mapc(%eventvalue4%:0.005:2.809:0:315)
 Else
-TaskValueSet data_11,winddir,mapc(%eventvalue4%:0.005:2.99:0:359)
+TaskValueSet data_8,winddir,mapc(%eventvalue4%:0.005:2.99:0:359)
 Endif
-TaskValueSet internal_1,int_winddir_x,cos_d([data_11#winddir])
-TaskValueSet internal_1,int_winddir_y,sin_d([data_11#winddir])
+TaskValueSet internal_1,int_winddir_x,cos_d([data_8#winddir])
+TaskValueSet internal_1,int_winddir_y,sin_d([data_8#winddir])
 TaskRun internal_1
-TaskValueSet data_10,windspeed_avg2m,[internal_1#int_windspeed.avg24]
-TaskValueSet data_10,windspeed_avg10m,[internal_1#int_windspeed.avg120]
-TaskValueSet data_10,windgust_max2m,[internal_1#int_windspeed.max24]
-TaskValueSet data_12,windgust_max10m,[internal_1#int_windspeed.max120]
-TaskValueSet data_5,beaufort,%c_ms2Bft%([data_10#windspeed_avg2m]/3.6)
-If [data_10#windspeed]>[data_13#windgust_maxdaily]
-TaskValueSetAndRun data_13,windgust_maxdaily,[data_10#windspeed]
+TaskValueSet data_7,windspeed_avg2m,[internal_1#int_windspeed.avg24]
+TaskValueSet data_7,windspeed_avg10m,[internal_1#int_windspeed.avg120]
+TaskValueSet data_7,windgust_max2m,[internal_1#int_windspeed.max24]
+TaskValueSet data_8,windgust_max10m,[internal_1#int_windspeed.max120]
+TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
+If [data_7#windspeed]>[data_9#windgust_maxdaily]
+TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
 Endif
-Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]/3600*5))
-TaskValueSet data_13,windrun_daily,%v_windrun_daily%
-Let,x_winddir_avg2m,[internal_1#int_winddir_x.avg24]
-Let,y_winddir_avg2m,[internal_1#int_winddir_y.avg24]
-Let,x_winddir_avg10m,[internal_1#int_winddir_x.avg120]
-Let,y_winddir_avg10m,[internal_1#int_winddir_y.avg120]
-If %v_x_winddir_avg2m%>0
-Let,theta_avg2m,atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%)
-Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%>= 0
-Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))+3.14159265359
-Elseif %v_x_winddir_avg2m% < 0 And %v_y_winddir_avg2m%<0
-Let,theta_avg2m,(atan(%v_y_winddir_avg2m%/%v_x_winddir_avg2m%))-3.14159265359
-Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%>0
-Let,theta_avg2m,3.14159265359/2
-Elseif %v_x_winddir_avg2m% = 0 And %v_y_winddir_avg2m%<0
-Let,theta_avg2m,-3.14159265359/2
-Endif
-If %v_x_winddir_avg10m%>0
-Let,theta_avg10m,atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%)
-Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%>=0
-Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))+3.14159265359
-Elseif %v_x_winddir_avg10m% < 0 And %v_y_winddir_avg10m%<0
-Let,theta_avg10m,(atan(%v_y_winddir_avg10m%/%v_x_winddir_avg10m%))-3.14159265359
-Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%>0
-Let,theta_avg10m,3.14159265359/2
-Elseif %v_x_winddir_avg10m% = 0 And %v_y_winddir_avg10m%<0
-Let,theta_avg10m,-3.14159265359/2
-Endif
-TaskValueSet data_11,winddir_avg2m,((%v_theta_avg2m%*180/3.14159265359)+360)%360
-TaskValueSet data_11,winddir_avg10m,((%v_theta_avg10m%*180/3.14159265359)+360)%360
+Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]*[ads1115_1#settings.interval]/3600))
+TaskValueSet data_9,windrun_daily,%v_windrun_daily%
+TaskValueSet data_8,winddir_avg2m,fmod((atan2_d([internal_1#int_winddir_y.avg24]:[internal_1#int_winddir_x.avg24])+360):360)
+TaskValueSet data_8,winddir_avg10m,fmod((atan2_d([internal_1#int_winddir_y.avg120]:[internal_1#int_winddir_x.avg120])+360):360)
 Endon

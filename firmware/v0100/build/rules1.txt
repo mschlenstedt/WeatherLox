@@ -1,4 +1,4 @@
-// V1.0.2_min - 17.01.2026
+// V1.1.0_min - 18.10.2026
 On System#Boot Do
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Set some important variables manually
@@ -9,14 +9,16 @@ Let,stationheight,0
 // Set Coefficients for calculating sun duration!
 // Note: Explanation: https://github.com/Jterrettaz/sunduration
 // Note: globcoeff 0.92 for germany. Too little sunshine recorded: decrease value; too much sunshine recorded: increase value)
-// Note: bcoeff 0.65 default value
+// Note: bcoeff 0.06 default value
 Let,globcoeff,0.92
 Let,bcoeff,0.06
+// Note: sunmin: minimum solar radiation in W/m² for sunshine (like FOSHKplugin SUN_MIN, default 12)
+Let,sunmin,12
 //
 // Volume of the rainamount bucket in mm
 Let,rainbucket,0.2
 //
-// Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (vor restoring after powerloss)
+// Save sum values (daily, weekly, monthly, yearly) to weatherlox webserver (for restoring after powerloss)
 Let,savesumvalues,1
 //
 // Get some values from OpenMeteo we cannot measure by ourselves
@@ -25,6 +27,34 @@ Let,getopenmeteo,1
 // Kind of winddirection sensor: 0=0-360° | 1=8-Directions
 Let,winddirsensor,1
 //
+// Automatic update of Rules 2-4 from the weatherlox provisioning server (1 = on, 0 = off). Rules 1 is never changed.
+// Needs Tools > Settings Archive: "Allow Fetch by Command" for rules2-4 checked, "Delete First" unchecked
+Let,autoupdate,1
+//
 // No changes beyond this line!
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+LoopTimerSet,4,3600 // Check for new Rules once per hour, but only between 3:00 and 3:59 (see below)
+Endon
+// Automatic update of Rules 2-4 - in Rules 1, because it must survive a failed download and must not replace itself
+// Each of Rules 2-4 sets its version in an event (On version2 ... On version4), a missing or old file reports an old version
+On Rules#Timer=4 Do
+If %v_autoupdate%>0 And %syshour%=3
+Event,version2
+Event,version3
+Event,version4
+Event,checkupdate
+Endif
+Endon
+// The server answers HTTP 226 if there are newer Rules, else 204
+On checkupdate Do
+SendToHTTP,webservices.weatherlox.de,80,"check_rules.php?v2=%v_rv2%&v3=%v_rv3%&v4=%v_rv4%"
+Endon
+On http#webservices.weatherlox.de=226 Do
+LogEntry,"Rules update: newer Rules on the server"
+If %v_autoupdate%>0
+Provision,Rules,2
+Provision,Rules,3
+Provision,Rules,4
+Reboot
+Endif
 Endon

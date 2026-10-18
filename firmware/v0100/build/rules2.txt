@@ -1,42 +1,89 @@
-// V1.0.2_min - 17.01.2026
+// V1.1.0_min - 18.10.2026
+On version2 Do
+Let,rv2,10100
+Endon
 on WiFi#Connected Do
 LetStr,ecowittstationtype,"WeatherLox"
 LetStr,ecowittmodel,"WEATHERLOX_V1.0"
 LetStr,ecowittmac,{urlencode:"%mac%"}
 Let,rainratelast,0
+Event,EnableSensors
+LoopTimerSetAndRun,1,900
+LoopTimerSetAndRun,2,5
+LoopTimerSetAndRun,3,300
+Endon
+On EnableSensors Do
 TaskEnable,ads1115_1
 TaskEnable,veml7700_1
 TaskEnable,ina219_1
 TaskEnable,bmx280_1
+TaskEnable,bmp58x_1
 TaskEnable,as3935_1
 TaskEnable,sht3x_1
-If %v_savesumvalues%>0 And %v_sumvaluesset%<1
-SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
-Endif
-Let,sumvaluesset,1
-LoopTimerSetAndRun,1,900
-LoopTimerSetAndRun,2,5
-LoopTimerSetAndRun,3,300
-If %v_stationheight%=0
-SendToHTTP,api.open-meteo.com,80,"v1/elevation?latitude=%latitude%&longitude=%longitude%#json1"
-Endif
-If [data_1#settings.controller3.enabled]>0
-SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
-Endif
 Endon
 On OpenMeteo#current Do
-TaskValueSet data_3,precipitationprob,%eventvalue1%
-TaskValueSet data_3,visibility,%eventvalue2%/1000
-TaskValueSet data_3,evapotranspiration,%eventvalue3%
-TaskValueSet data_3,et0evapotranspiration,%eventvalue4%
-TaskValueSet data_4,weathercode,%eventvalue5%
-TaskValueSet data_4,cloudcover,%eventvalue6%
+If %eventvalue1%!=-256
+TaskValueSet data_13,precipitationprob,%eventvalue1%
+Endif
+If %eventvalue2%!=-256
+TaskValueSet data_13,visibility,%eventvalue2%/1000
+Endif
+If %eventvalue3%!=-256
+TaskValueSet data_13,evapotranspiration,%eventvalue3%
+Endif
+If %eventvalue4%!=-256
+TaskValueSet data_13,et0evapotranspiration,%eventvalue4%
+Endif
+If %eventvalue5%!=-256
+TaskValueSet data_12,weathercode,%eventvalue5%
+Endif
+If %eventvalue6%!=-256
+TaskValueSet data_12,cloudcover,%eventvalue6%
+Endif
+Endon
+On restoresums Do
+Let,sumsok,1
+Let,savedts,0
+Let,savedts,%eventvalue10%
+If %v_savedts%>0
+Let,daystart,%unixtime%-%syssec_d%
+Let,weekstart,%v_daystart%-((%sysweekday%+5)%7)*86400
+Let,monthstart,%v_daystart%-(%sysday%-1)*86400
+Let,yearstart,(((%sysyear%-1970)*365+((%sysyear%-1969-((%sysyear%-1969)%4))/4))*86400)-%systzoffset_s%
+If %v_savedts%>=%v_daystart%
+Let,solarradiation_daily,%eventvalue1%
+TaskValueSet data_11,solarradiation_daily,%eventvalue1%
+Let,sunduration_daily,%eventvalue2%
+TaskValueSet data_11,sunduration_daily,%eventvalue2%
+TaskValueSet data_9,windgust_maxdaily,%eventvalue3%
+Let,windrun_daily,%eventvalue4%
+TaskValueSet data_9,windrun_daily,%eventvalue4%
+Let,rain_daily,%eventvalue5%
+TaskValueSet data_6,rain_daily,%eventvalue5%
+Let,lightning_daily,%eventvalue9%
+TaskValueSet data_15,lightning_daily,%eventvalue9%
+Endif
+If %v_savedts%>=%v_weekstart%
+Let,rain_weekly,%eventvalue6%
+TaskValueSet data_6,rain_weekly,%eventvalue6%
+Endif
+If %v_savedts%>=%v_monthstart%
+Let,rain_monthly,%eventvalue7%
+TaskValueSet data_6,rain_monthly,%eventvalue7%
+Endif
+If %v_savedts%>=%v_yearstart%
+Let,rain_yearly,%eventvalue8%
+TaskValueSet data_6,rain_yearly,%eventvalue8%
+Endif
+Endif
 Endon
 On JsonReply* Do
 If %eventpar%=1
 Let,stationheight,%eventvalue1%
 Elseif %eventpar%=2
 LetStr,ecowittpasskey,%eventvalue1%
+Let,passkeyok,1
 Elseif %eventpar%=3
+Event,restoresums=%eventvalue1%,%eventvalue2%,%eventvalue3%,%eventvalue4%,%eventvalue5%,%eventvalue6%,%eventvalue7%,%eventvalue8%,%eventvalue9%,%eventvalue10%
 Endif
 Endon

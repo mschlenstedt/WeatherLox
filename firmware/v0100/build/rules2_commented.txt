@@ -1,4 +1,4 @@
- // V1.0.2 - 17.01.2026
+// V1.1.0 - 18.10.2026
 
 // Version of Rules 2 for the automatic update (Rules 1) - must match the version in the first line
 On version2 Do
