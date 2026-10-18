@@ -273,7 +273,7 @@
 
 // #define FEATURE_MQTT_TLS 1 // Enable TLS support for MQTT Controller connections (only available on ESP32)
 // #define FEATURE_EMAIL_TLS 1 // Enable TLS support for Email Notifications (only available on ESP32)
-// #define FEATURE_HTTP_TLS 1 // Enable TLS support for HTTP connections (only available on ESP32)
+#define FEATURE_HTTP_TLS 1 // Enable TLS support for HTTP connections (only available on ESP32) - WeatherLox: SendToHTTPS to webservices
 
 #if FEATURE_CUSTOM_PROVISIONING
 // For device models, see src/src/DataTypes/DeviceModel.h
