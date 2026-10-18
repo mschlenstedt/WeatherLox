@@ -621,7 +621,7 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 // #define USES_P177   // XDB401 I2C Pressure
 // #define USES_P178   // LU9685 Servo controller
 
-// #define USES_P180   // I2C Generic
+#define USES_P180   // I2C Generic (BMP58x pressure sensor, task 6 bmp58x_1)
 
 /*
  #######################################################################################################
