@@ -275,12 +275,6 @@
 // #define FEATURE_EMAIL_TLS 1 // Enable TLS support for Email Notifications (only available on ESP32)
 // #define FEATURE_HTTP_TLS 1 // Enable TLS support for HTTP connections (only available on ESP32)
 
-// WeatherLox: all TLS off. With FEATURE_TLS the provisioning download (Provision,Rules,N) reads from the wrong client and
-// only writes an empty _tmp file, and SendToHTTPS crashes the ESP. The WeatherLox webservices are reachable via plain HTTP.
-#define FEATURE_MQTT_TLS 0
-#define FEATURE_EMAIL_TLS 0
-#define FEATURE_HTTP_TLS 0
-
 #if FEATURE_CUSTOM_PROVISIONING
 // For device models, see src/src/DataTypes/DeviceModel.h
 // #ifdef ESP32
