@@ -1,4 +1,4 @@
-// V1.1.0_min - 18.10.2026
+// V1.1.1_min - 18.10.2026
 On System#Boot Do
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Set some important variables manually
@@ -25,7 +25,7 @@ Let,savesumvalues,1
 Let,getopenmeteo,1
 //
 // Kind of winddirection sensor: 0=0-360° | 1=8-Directions
-Let,winddirsensor,1
+Let,winddirsensor,0
 //
 // Automatic update of Rules 2-4 from the weatherlox provisioning server (1 = on, 0 = off). Rules 1 is never changed.
 // Needs Tools > Settings Archive: "Allow Fetch by Command" for rules2-4 checked, "Delete First" unchecked

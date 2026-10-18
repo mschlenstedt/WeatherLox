@@ -1,6 +1,6 @@
-// V1.1.0_min - 18.10.2026
+// V1.1.1_min - 18.10.2026
 On version4 Do
-Let,rv4,10100
+Let,rv4,10101
 Endon
 On Rules#Timer=2 Do
 If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
@@ -33,7 +33,7 @@ LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainra
 LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
 LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_15#lightning_daily]&lightning=[data_15#lightning]&"
 LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
-LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&"
+LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%"
 Endif
 Endon
 On Clock#Time=All,**:** Do

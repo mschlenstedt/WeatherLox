@@ -1,8 +1,8 @@
-// V1.1.0 - 18.10.2026
+// V1.1.1 - 18.10.2026
 
 // Version of Rules 4 for the automatic update (Rules 1) - must match the version in the first line
 On version4 Do
-  Let,rv4,10100
+  Let,rv4,10101
 Endon
  
 // 5sec Tasks / Events
@@ -41,7 +41,8 @@ On Rules#Timer=2 Do
     LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
     LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_15#lightning_daily]&lightning=[data_15#lightning]&"
     LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
-    LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%&" 
+    // Last block without a trailing "&" (FOSHKplugin drops a body that ends with "&")
+    LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%" 
   Endif
 Endon
 
