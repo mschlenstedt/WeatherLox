@@ -294,8 +294,6 @@
 #define DEFAULT_PROVISIONING_FETCH_FIRMWARE     true
 #define DEFAULT_PROVISIONING_SAVE_URL           true
 #define DEFAULT_PROVISIONING_SAVE_CREDENTIALS   true
-#define DEFAULT_PROVISIONING_DELETE_FIRST       true  // WeatherLox: delete the old file before the download (no _bak/_tmp files that fill up LittleFS),
-                                                     // needs ESPEasy_provisioning_delete_first.patch (not evaluated by stock ESPEasy)
 #define DEFAULT_PROVISIONING_ALLOW_FETCH_COMMAND true
 #define DEFAULT_PROVISIONING_URL                "http://webservices.weatherlox.de/provisioning/v0100"
 #define DEFAULT_PROVISIONING_USER               ""
