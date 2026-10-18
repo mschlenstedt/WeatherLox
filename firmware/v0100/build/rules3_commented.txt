@@ -1,5 +1,10 @@
  // V1.0.2 - 17.01.2026
 
+// Version of Rules 3 for the automatic update (Rules 1) - must match the version in the first line
+On version3 Do
+  Let,rv3,10100
+Endon
+
 // Calculate rainrate
 On input_1#All Do
   If %eventvalue1%=1
