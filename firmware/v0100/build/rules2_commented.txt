@@ -39,6 +39,7 @@ On EnableSensors Do
   TaskEnable,veml7700_1
   TaskEnable,ina219_1
   TaskEnable,bmx280_1
+  TaskEnable,bmp58x_1
   TaskEnable,as3935_1
   TaskEnable,sht3x_1
 Endon

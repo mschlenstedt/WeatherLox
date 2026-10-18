@@ -33,17 +33,32 @@ On input_2#All Do
   Endif
 Endon
 
-// Calculate Temp, Hum, Pressure - BMx280 Sensor
+// BMx280 Sensor (BME280: temperature, humidity, pressure - BMP280: temperature, pressure, humidity is always 0)
+// Pressure only if there is no BMP58x (more accurate), temperature/humidity only if there is no SHT3x
 On bmx280_1#All Do
-  TaskValueSet data_3,pressure_abs,%eventvalue3%
+  If %unixtime%-%v_bmp58xlast%>120 // No value from a BMP58x for 2 minutes (or none connected)
+    Event,calcpressure=%eventvalue3%
+  Endif
+  If [sht3x_1#settings.enabled]=0 And %eventvalue2%>0 // No SHT3x available and humidity from a BME280
+    Event,calctemps=%eventvalue1%,%eventvalue2%
+  Endif
+Endon
+
+// BMP58x Sensor via Generic I2C (P180), Output Data Type Temp / Baro: %eventvalue1% = temperature (°C), %eventvalue2% = pressure (hPa)
+// Has priority over a BMx280 for the pressure. Task interval must be 60 s or less.
+On bmp58x_1#All Do
+  Let,bmp58xlast,%unixtime%
+  Event,calcpressure=%eventvalue2%
+Endon
+
+// Absolute and relative (sea level) air pressure: %eventvalue1% = absolute pressure (hPa)
+On calcpressure Do
+  TaskValueSet data_3,pressure_abs,%eventvalue1%
   // Sea Level pressure (rel): // Formula from http://www.adafruit.com/datasheets/BST-BMP180-DS000-09.pdf, Page 17
   If %v_stationheight%>0
-    TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue3%,%v_stationheight%)
+    TaskValueSet data_3,pressure_rel,%c_sea_pres_alt%(%eventvalue1%,%v_stationheight%)
   Else
-    TaskValueSet data_3,pressure_rel,%eventvalue3%
-  Endif
-  If [sht3x_1#settings.enabled]=0 // If no SHT3x Sensor is available
-    Event,calctemps=%eventvalue1%,%eventvalue2%
+    TaskValueSet data_3,pressure_rel,%eventvalue1%
   Endif
 Endon
 

@@ -77,7 +77,7 @@ On Clock#Time=All,**:** Do
   // Calculate pressure trends
   // See: https://www.nxp.com/docs/en/application-note/AN3914.pdf
   TaskValueSet internal_2,int_random,%c_random%(0, 1) // Force the Statistics to be updated
-  TaskValueSetAndRun internal_2,int_pressure,[bmx280_1#raw_pressure_abs.avg60]
+  TaskValueSetAndRun internal_2,int_pressure,[data_3#pressure_abs.avg60] // Average of the last 5 minutes (data_3 has Stats enabled, interval 5 s), independent of the pressure sensor
   // sample1 is the newest value (one per minute), so sample61 is 60 minutes ago and sample181 is 180 minutes ago
   If [internal_2#int_pressure.sample]>60
     TaskValueSet data_3,pressurechange1,[internal_2#int_pressure]-[internal_2#int_pressure.sample61]
