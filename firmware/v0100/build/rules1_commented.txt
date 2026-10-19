@@ -4,7 +4,7 @@ On System#Boot Do
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Set some important variables manually
   //
-  // Set station height over ground - leave to 0 for automatic
+  // Set station height above sea level in m (height of the pressure sensor) - leave to 0 for automatic (ground height from Open-Meteo)
   Let,stationheight,0
   //
   // Set Coefficients for calculating sun duration!
