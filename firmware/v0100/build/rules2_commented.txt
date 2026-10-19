@@ -1,8 +1,8 @@
-// V1.1.2 - 18.10.2026
+// V1.1.3 - 19.10.2026
 
 // Version of Rules 2 for the automatic update (Rules 1) - must match the version in the first line
 On version2 Do
-  Let,rv2,10102
+  Let,rv2,10103
 Endon
 
 on WiFi#Connected Do

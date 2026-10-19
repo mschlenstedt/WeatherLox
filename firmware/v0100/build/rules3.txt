@@ -1,6 +1,6 @@
-// V1.1.2_min - 18.10.2026
+// V1.1.3_min - 19.10.2026
 On version3 Do
-Let,rv3,10102
+Let,rv3,10103
 Endon
 On input_1#All Do
 If %eventvalue1%=1
@@ -105,6 +105,12 @@ TaskValueSet data_15,lightning_time,%unixtime%
 Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
 TaskValueSet data_15,lightning_daily,%v_lightning_daily%
 Endif
+Endon
+On ow_1#All Do
+TaskValueSet data_14,temperature1,%eventvalue1%
+TaskValueSet data_14,temperature2,%eventvalue2%
+TaskValueSet data_14,temperature3,%eventvalue3%
+TaskValueSet data_14,temperature4,%eventvalue4%
 Endon
 On veml7700_1#All Do
 TaskValueSet data_10,illuminance,%eventvalue1%
