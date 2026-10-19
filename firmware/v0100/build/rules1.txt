@@ -1,4 +1,4 @@
-// V1.1.2_min - 18.10.2026
+// rules1: own settings, never replaced by the automatic update, so it has no version number
 On System#Boot Do
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Set some important variables manually
