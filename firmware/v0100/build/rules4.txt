@@ -1,6 +1,6 @@
-// V1.1.3_min - 19.10.2026
+// V1.1.4_min - 21.10.2026
 On version4 Do
-Let,rv4,10103
+Let,rv4,10104
 Endon
 On Rules#Timer=2 Do
 If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
@@ -11,7 +11,7 @@ TaskValueSet data_5,rain_event,0
 Let,rain_event,0
 Endif
 If [data_1#settings.controller3.enabled]>0
-LetStr,ecowittdateutc,"{urlencode:"{substring:0:19:"%c_ts2date%(%unixtime%)"}"}"
+LetStr,ecowittdateutc,"{substring:0:10:"%c_ts2date%(%unixtime%)"}+{substring:11:19:"%c_ts2date%(%unixtime%)"}"
 Let,ecowitttempf,%c_c2f%([data_1#temperature])
 Let,ecowittbaromabsin,[data_3#pressure_abs]*0.02953
 Let,ecowittbaromrelin,[data_3#pressure_rel]*0.02953
