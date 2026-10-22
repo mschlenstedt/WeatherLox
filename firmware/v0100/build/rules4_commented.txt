@@ -1,12 +1,20 @@
-// V1.1.5 - 22.10.2026
+// V1.1.6 - 22.10.2026
 
 // Version of Rules 4 for the automatic update (Rules 1) - must match the version in the first line
 On version4 Do
-  Let,rv4,10105
+  Let,rv4,10106
 Endon
  
 // 5sec Tasks / Events
 On Rules#Timer=2 Do
+  // Release the sum values for the controllers once per start: after the restore (sumsok, Rules 2), at the latest after 15 minutes
+  // (server or NTP not reachable - then the restore may still come later and the sums jump)
+  If %v_sendok%<1
+    If %v_sumsok%=1 Or %uptime%>15
+      Let,sendok,1
+      Event,releasesums
+    Endif
+  Endif
   // Resetting Rainrate if no pulse the last 600s
   If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
       TaskValueSet data_5,rainrate,0
@@ -28,7 +36,9 @@ On Rules#Timer=2 Do
     Let,rain_event,0
   Endif
   // Prepare and send data for Ecowitt if enabled
-  If [data_1#settings.controller3.enabled]>0
+  // Only after the sum values are valid (sendok, Rules 2 releasesums): before, the sums are 0 after a power loss and the jump to the restored
+  // values would count as rain in some receivers (WeeWX interceptor). Until then the blocks stay empty and the body is empty.
+  If [data_1#settings.controller3.enabled]>0 And %v_sendok%=1
     // %unixtime% is UTC and %c_ts2date% does not apply a time zone. The argument is read as float (no calculation!), so the time is up to 64 s off
     // Format like an Ecowitt gateway: date+time without percent encoding ("2026-10-21+09:38:08"),
     // because some receivers (FOSHKplugin, WeeWX interceptor) only decode an uppercase "%3A" ({urlencode} writes "%3a")
@@ -173,15 +183,19 @@ On Rules#Timer=3 Do
   Endif
   // Sum values: restore them from the weatherlox webserver after a restart, then save them every 5 minutes (for a power loss)
   If %v_savesumvalues%>0
-    If %v_sumsok%<1 And %uptime%>15
-      Let,sumsok,1 // No answer from the server for 15 minutes: stop trying to restore and start saving
-    Endif
+    // No timeout: as long as the server does not answer, nothing is saved (the saved values stay for the restore)
     If %v_sumsok%<1
       // Do not save before the restore, it would overwrite the saved values
-      SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+      // Restore only with a valid time (after 1.1.2026): without NTP the clock starts at 1.1.1970 after a power loss
+      // and every saved value would count as one of today (Rules 2, restoresums)
+      If %unixtime%>1767225600
+        SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+      Endif
     Else
       SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]&lightning_daily=[data_15#lightning_daily]"
     Endif
+  Else
+    Let,sumsok,1 // Sum values are not saved: nothing to restore, Ecowitt may send (Rules 4, Timer 2)
   Endif
 Endon
 

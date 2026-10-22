@@ -1,8 +1,8 @@
-// V1.1.5 - 22.10.2026
+// V1.1.6 - 22.10.2026
 
 // Version of Rules 3 for the automatic update (Rules 1) - must match the version in the first line
 On version3 Do
-  Let,rv3,10105
+  Let,rv3,10106
 Endon
 
 // Calculate rain amount and rainrate
@@ -21,6 +21,16 @@ Endon
 
 // Add rain to all rain counters: %eventvalue1% = rain (mm), from a bucket pulse or the rain sensor estimate (Rules 4)
 On addrain Do
+  // After a warm restart (reboot, crash, update) the task values are kept (RTC memory), the variables are 0: take over the task values.
+  // [x#y] is rounded to the decimals of the task (1 for rain), so only a bigger difference counts. Same for all sums below.
+  If [data_6#rain_yearly]>(%v_rain_yearly%+0.06) Or [data_6#rain_weekly]>(%v_rain_weekly%+0.06)
+    Let,rain_event,[data_5#rain_event]
+    Let,rain_hourly,[data_5#rain_hourly]
+    Let,rain_daily,[data_6#rain_daily]
+    Let,rain_weekly,[data_6#rain_weekly]
+    Let,rain_monthly,[data_6#rain_monthly]
+    Let,rain_yearly,[data_6#rain_yearly]
+  Endif
   Let,rain_event,%v_rain_event%+%eventvalue1%
   Let,rain_hourly,%v_rain_hourly%+%eventvalue1%
   Let,rain_daily,%v_rain_daily%+%eventvalue1%
@@ -144,6 +154,9 @@ On as3935_1#All Do
     Endif
     TaskValueSet data_15,lightning,%v_lightningdist%
     TaskValueSet data_15,lightning_time,%unixtime%
+    If [data_15#lightning_daily]>(%v_lightning_daily%+0.5) // Warm restart, see addrain
+      Let,lightning_daily,[data_15#lightning_daily]
+    Endif
     Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
     TaskValueSet data_15,lightning_daily,%v_lightning_daily%
   Endif
@@ -169,6 +182,12 @@ On ina219_1#All Do
       TaskValueSet data_10,solarradiation,0
   Else
     TaskValueSet data_10,solarradiation,%eventvalue1%*1792.1147 // (%eventvalue1%*1000/558)*1000 - Short circuit current (mA): 558 mA at 1000 W/m^2
+  Endif
+  If [data_11#solarradiation_daily]>(%v_solarradiation_daily%+0.01) // Warm restart, see addrain
+    Let,solarradiation_daily,[data_11#solarradiation_daily]
+  Endif
+  If [data_11#sunduration_daily]>(%v_sunduration_daily%+0.01)
+    Let,sunduration_daily,[data_11#sunduration_daily]
   Endif
   Let,solarradiation_daily,(%v_solarradiation_daily%+([data_10#solarradiation]*[ina219_1#settings.interval]/3600)) // Wh/m² - one value per task interval (s)
   TaskValueSet data_11,solarradiation_daily,%v_solarradiation_daily%
@@ -210,6 +229,9 @@ On ads1115_1#All Do
   TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
   If [data_7#windspeed]>[data_9#windgust_maxdaily] // Setting daily maximum
     TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
+  Endif
+  If [data_9#windrun_daily]>(%v_windrun_daily%+0.01) // Warm restart, see addrain
+    Let,windrun_daily,[data_9#windrun_daily]
   Endif
   Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]*[ads1115_1#settings.interval]/3600)) // km - one value per task interval (s)
   TaskValueSet data_9,windrun_daily,%v_windrun_daily%

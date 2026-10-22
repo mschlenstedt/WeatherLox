@@ -1,8 +1,14 @@
-// V1.1.5_min - 22.10.2026
+// V1.1.6_min - 22.10.2026
 On version4 Do
-Let,rv4,10105
+Let,rv4,10106
 Endon
 On Rules#Timer=2 Do
+If %v_sendok%<1
+If %v_sumsok%=1 Or %uptime%>15
+Let,sendok,1
+Event,releasesums
+Endif
+Endif
 If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
 TaskValueSet data_5,rainrate,0
 Endif
@@ -18,7 +24,7 @@ If %unixtime%>(%v_rainratelast%+3600) And [data_5#rainstate]=0
 TaskValueSet data_5,rain_event,0
 Let,rain_event,0
 Endif
-If [data_1#settings.controller3.enabled]>0
+If [data_1#settings.controller3.enabled]>0 And %v_sendok%=1
 LetStr,ecowittdateutc,"{substring:0:10:"%c_ts2date%(%unixtime%)"}+{substring:11:19:"%c_ts2date%(%unixtime%)"}"
 Let,ecowitttempf,%c_c2f%([data_1#temperature])
 Let,ecowittbaromabsin,[data_3#pressure_abs]*0.02953
@@ -137,14 +143,15 @@ If [data_1#settings.controller3.enabled]>0 And %v_passkeyok%<1
 SendToHTTP,webservices.weatherlox.de,80,"ecowittpasskey.php?mac={urlencode:"%mac%"}#json2"
 Endif
 If %v_savesumvalues%>0
-If %v_sumsok%<1 And %uptime%>15
-Let,sumsok,1
-Endif
 If %v_sumsok%<1
+If %unixtime%>1767225600
 SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+Endif
 Else
 SendToHTTP,webservices.weatherlox.de,80,"savedata.php?mac={urlencode:"%mac%"}&solarradiation_daily=[data_11#solarradiation_daily]&sunduration_daily=[data_11#sunduration_daily]&windgust_maxdaily=[data_9#windgust_maxdaily]&windrun_daily=[data_9#windrun_daily]&rain_daily=[data_6#rain_daily]&rain_weekly=[data_6#rain_weekly]&rain_monthly=[data_6#rain_monthly]&rain_yearly=[data_6#rain_yearly]&lightning_daily=[data_15#lightning_daily]"
 Endif
+Else
+Let,sumsok,1
 Endif
 Endon
 On Rules#Timer=1 Do

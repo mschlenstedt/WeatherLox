@@ -1,6 +1,6 @@
-// V1.1.5_min - 22.10.2026
+// V1.1.6_min - 22.10.2026
 On version3 Do
-Let,rv3,10105
+Let,rv3,10106
 Endon
 On input_1#All Do
 If %eventvalue1%=1
@@ -14,6 +14,14 @@ Let,rainratelast,%unixtime%
 Endif
 Endon
 On addrain Do
+If [data_6#rain_yearly]>(%v_rain_yearly%+0.06) Or [data_6#rain_weekly]>(%v_rain_weekly%+0.06)
+Let,rain_event,[data_5#rain_event]
+Let,rain_hourly,[data_5#rain_hourly]
+Let,rain_daily,[data_6#rain_daily]
+Let,rain_weekly,[data_6#rain_weekly]
+Let,rain_monthly,[data_6#rain_monthly]
+Let,rain_yearly,[data_6#rain_yearly]
+Endif
 Let,rain_event,%v_rain_event%+%eventvalue1%
 Let,rain_hourly,%v_rain_hourly%+%eventvalue1%
 Let,rain_daily,%v_rain_daily%+%eventvalue1%
@@ -107,6 +115,9 @@ Let,lightningdist,%eventvalue2%
 Endif
 TaskValueSet data_15,lightning,%v_lightningdist%
 TaskValueSet data_15,lightning_time,%unixtime%
+If [data_15#lightning_daily]>(%v_lightning_daily%+0.5)
+Let,lightning_daily,[data_15#lightning_daily]
+Endif
 Let,lightning_daily,%v_lightning_daily%+%eventvalue3%
 TaskValueSet data_15,lightning_daily,%v_lightning_daily%
 Endif
@@ -125,6 +136,12 @@ If %eventvalue1%<0.0005
 TaskValueSet data_10,solarradiation,0
 Else
 TaskValueSet data_10,solarradiation,%eventvalue1%*1792.1147
+Endif
+If [data_11#solarradiation_daily]>(%v_solarradiation_daily%+0.01)
+Let,solarradiation_daily,[data_11#solarradiation_daily]
+Endif
+If [data_11#sunduration_daily]>(%v_sunduration_daily%+0.01)
+Let,sunduration_daily,[data_11#sunduration_daily]
 Endif
 Let,solarradiation_daily,(%v_solarradiation_daily%+([data_10#solarradiation]*[ina219_1#settings.interval]/3600))
 TaskValueSet data_11,solarradiation_daily,%v_solarradiation_daily%
@@ -158,6 +175,9 @@ TaskValueSet data_8,windgust_max10m,[internal_1#int_windspeed.max120]
 TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
 If [data_7#windspeed]>[data_9#windgust_maxdaily]
 TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
+Endif
+If [data_9#windrun_daily]>(%v_windrun_daily%+0.01)
+Let,windrun_daily,[data_9#windrun_daily]
 Endif
 Let,windrun_daily,(%v_windrun_daily%+([internal_1#int_windspeed]*[ads1115_1#settings.interval]/3600))
 TaskValueSet data_9,windrun_daily,%v_windrun_daily%

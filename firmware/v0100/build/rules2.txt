@@ -1,6 +1,6 @@
-// V1.1.5_min - 22.10.2026
+// V1.1.6_min - 22.10.2026
 On version2 Do
-Let,rv2,10105
+Let,rv2,10106
 Endon
 on WiFi#Connected Do
 LetStr,ecowittstationtype,"WeatherLox"
@@ -41,41 +41,163 @@ If %eventvalue6%!=-256
 TaskValueSet data_12,cloudcover,%eventvalue6%
 Endif
 Endon
+On TaskInit#data_5 Do
+If %bootcause%=1 And %v_sendok%<1
+TaskDisable,data_5
+Endif
+Endon
+On TaskInit#data_6 Do
+If %bootcause%=1 And %v_sendok%<1
+TaskDisable,data_6
+Event,blockcontrollers
+Endif
+Endon
+On blockcontrollers Do
+Let,ctrlfix,1
+If [data_1#settings.controller9.enabled]=1
+Let,ctrlfix,0
+Endif
+If %v_ctrlfix%=1
+Let,c1off,0
+Let,cs,0
+Let,cs,[data_5#settings.controller1.enabled]+[data_6#settings.controller1.enabled]+[data_9#settings.controller1.enabled]+[data_11#settings.controller1.enabled]+[data_15#settings.controller1.enabled]
+If %v_cs%>0
+ControllerDisable,1
+Let,c1off,1
+Endif
+Let,c2off,0
+Let,cs,0
+Let,cs,[data_5#settings.controller2.enabled]+[data_6#settings.controller2.enabled]+[data_9#settings.controller2.enabled]+[data_11#settings.controller2.enabled]+[data_15#settings.controller2.enabled]
+If %v_cs%>0
+ControllerDisable,2
+Let,c2off,1
+Endif
+Let,c3off,0
+Let,cs,0
+Let,cs,[data_5#settings.controller3.enabled]+[data_6#settings.controller3.enabled]+[data_9#settings.controller3.enabled]+[data_11#settings.controller3.enabled]+[data_15#settings.controller3.enabled]
+If %v_cs%>0
+ControllerDisable,3
+Let,c3off,1
+Endif
+Endif
+Endon
+On TaskInit#data_9 Do
+If %bootcause%=1 And %v_sendok%<1
+TaskDisable,data_9
+Endif
+Endon
+On TaskInit#data_11 Do
+If %bootcause%=1 And %v_sendok%<1
+TaskDisable,data_11
+Endif
+Endon
+On TaskInit#data_15 Do
+If %bootcause%=1 And %v_sendok%<1
+TaskDisable,data_15
+Endif
+Endon
+On Time#Initialized Do
+If %v_savesumvalues%>0 And %v_sumsok%<1
+SendToHTTP,webservices.weatherlox.de,80,"getdata.php?mac={urlencode:"%mac%"}#json3"
+Endif
+Endon
 On restoresums Do
-Let,sumsok,1
 Let,savedts,0
+If %v_sumsok%<1
 Let,savedts,%eventvalue10%
+Endif
+Let,sumsok,1
 If %v_savedts%>0
 Let,daystart,%unixtime%-%syssec_d%
 Let,weekstart,%v_daystart%-((%sysweekday%+5)%7)*86400
 Let,monthstart,%v_daystart%-(%sysday%-1)*86400
 Let,yearstart,(((%sysyear%-1970)*365+((%sysyear%-1969-((%sysyear%-1969)%4))/4))*86400)-%systzoffset_s%
+Let,rk,1
+Let,rm,1
+If %bootcause%=1
+Let,rk,2
+Let,rm,0
+Endif
 If %v_savedts%>=%v_daystart%
-Let,solarradiation_daily,%eventvalue1%
-TaskValueSet data_11,solarradiation_daily,%eventvalue1%
-Let,sunduration_daily,%eventvalue2%
-TaskValueSet data_11,sunduration_daily,%eventvalue2%
-TaskValueSet data_9,windgust_maxdaily,%eventvalue3%
-Let,windrun_daily,%eventvalue4%
-TaskValueSet data_9,windrun_daily,%eventvalue4%
-Let,rain_daily,%eventvalue5%
-TaskValueSet data_6,rain_daily,%eventvalue5%
-Let,lightning_daily,%eventvalue9%
-TaskValueSet data_15,lightning_daily,%eventvalue9%
+Let,rb,(%v_solarradiation_daily%+[data_11#solarradiation_daily]+(abs(%v_solarradiation_daily%-[data_11#solarradiation_daily])))/2
+Let,solarradiation_daily,(%v_rk%*(%eventvalue1%+%v_rb%)+%v_rm%*(abs(%eventvalue1%-%v_rb%)))/2
+Let,rb,(%v_sunduration_daily%+[data_11#sunduration_daily]+(abs(%v_sunduration_daily%-[data_11#sunduration_daily])))/2
+Let,sunduration_daily,(%v_rk%*(%eventvalue2%+%v_rb%)+%v_rm%*(abs(%eventvalue2%-%v_rb%)))/2
+Let,rb,(%v_windrun_daily%+[data_9#windrun_daily]+(abs(%v_windrun_daily%-[data_9#windrun_daily])))/2
+Let,windrun_daily,(%v_rk%*(%eventvalue4%+%v_rb%)+%v_rm%*(abs(%eventvalue4%-%v_rb%)))/2
+Let,rb,(%v_rain_daily%+[data_6#rain_daily]+(abs(%v_rain_daily%-[data_6#rain_daily])))/2
+Let,rain_daily,(%v_rk%*(%eventvalue5%+%v_rb%)+%v_rm%*(abs(%eventvalue5%-%v_rb%)))/2
+Let,rb,(%v_lightning_daily%+[data_15#lightning_daily]+(abs(%v_lightning_daily%-[data_15#lightning_daily])))/2
+Let,lightning_daily,(%v_rk%*(%eventvalue9%+%v_rb%)+%v_rm%*(abs(%eventvalue9%-%v_rb%)))/2
+Let,rb,(%v_windgust_maxdaily%+[data_9#windgust_maxdaily]+(abs(%v_windgust_maxdaily%-[data_9#windgust_maxdaily])))/2
+Let,windgust_maxdaily,(%eventvalue3%+%v_rb%+(abs(%eventvalue3%-%v_rb%)))/2
 Endif
 If %v_savedts%>=%v_weekstart%
-Let,rain_weekly,%eventvalue6%
-TaskValueSet data_6,rain_weekly,%eventvalue6%
+Let,rb,(%v_rain_weekly%+[data_6#rain_weekly]+(abs(%v_rain_weekly%-[data_6#rain_weekly])))/2
+Let,rain_weekly,(%v_rk%*(%eventvalue6%+%v_rb%)+%v_rm%*(abs(%eventvalue6%-%v_rb%)))/2
 Endif
 If %v_savedts%>=%v_monthstart%
-Let,rain_monthly,%eventvalue7%
-TaskValueSet data_6,rain_monthly,%eventvalue7%
+Let,rb,(%v_rain_monthly%+[data_6#rain_monthly]+(abs(%v_rain_monthly%-[data_6#rain_monthly])))/2
+Let,rain_monthly,(%v_rk%*(%eventvalue7%+%v_rb%)+%v_rm%*(abs(%eventvalue7%-%v_rb%)))/2
 Endif
 If %v_savedts%>=%v_yearstart%
-Let,rain_yearly,%eventvalue8%
-TaskValueSet data_6,rain_yearly,%eventvalue8%
+Let,rb,(%v_rain_yearly%+[data_6#rain_yearly]+(abs(%v_rain_yearly%-[data_6#rain_yearly])))/2
+Let,rain_yearly,(%v_rk%*(%eventvalue8%+%v_rb%)+%v_rm%*(abs(%eventvalue8%-%v_rb%)))/2
 Endif
 Endif
+Endon
+On releasesums Do
+Let,sendok,1
+TaskEnable,data_5
+TaskEnable,data_6
+TaskEnable,data_9
+TaskEnable,data_11
+TaskEnable,data_15
+Let,rb,(%v_rain_event%+[data_5#rain_event]+(abs(%v_rain_event%-[data_5#rain_event])))/2
+Let,rain_event,%v_rb%
+TaskValueSet data_5,rain_event,%v_rain_event%
+Let,rb,(%v_rain_hourly%+[data_5#rain_hourly]+(abs(%v_rain_hourly%-[data_5#rain_hourly])))/2
+Let,rain_hourly,%v_rb%
+TaskValueSet data_5,rain_hourly,%v_rain_hourly%
+Let,rb,(%v_solarradiation_daily%+[data_11#solarradiation_daily]+(abs(%v_solarradiation_daily%-[data_11#solarradiation_daily])))/2
+Let,solarradiation_daily,%v_rb%
+TaskValueSet data_11,solarradiation_daily,%v_solarradiation_daily%
+Let,rb,(%v_sunduration_daily%+[data_11#sunduration_daily]+(abs(%v_sunduration_daily%-[data_11#sunduration_daily])))/2
+Let,sunduration_daily,%v_rb%
+TaskValueSet data_11,sunduration_daily,%v_sunduration_daily%
+Let,rb,(%v_windrun_daily%+[data_9#windrun_daily]+(abs(%v_windrun_daily%-[data_9#windrun_daily])))/2
+Let,windrun_daily,%v_rb%
+TaskValueSet data_9,windrun_daily,%v_windrun_daily%
+Let,rb,(%v_rain_daily%+[data_6#rain_daily]+(abs(%v_rain_daily%-[data_6#rain_daily])))/2
+Let,rain_daily,%v_rb%
+TaskValueSet data_6,rain_daily,%v_rain_daily%
+Let,rb,(%v_lightning_daily%+[data_15#lightning_daily]+(abs(%v_lightning_daily%-[data_15#lightning_daily])))/2
+Let,lightning_daily,%v_rb%
+TaskValueSet data_15,lightning_daily,%v_lightning_daily%
+Let,rb,(%v_rain_weekly%+[data_6#rain_weekly]+(abs(%v_rain_weekly%-[data_6#rain_weekly])))/2
+Let,rain_weekly,%v_rb%
+TaskValueSet data_6,rain_weekly,%v_rain_weekly%
+Let,rb,(%v_rain_monthly%+[data_6#rain_monthly]+(abs(%v_rain_monthly%-[data_6#rain_monthly])))/2
+Let,rain_monthly,%v_rb%
+TaskValueSet data_6,rain_monthly,%v_rain_monthly%
+Let,rb,(%v_rain_yearly%+[data_6#rain_yearly]+(abs(%v_rain_yearly%-[data_6#rain_yearly])))/2
+Let,rain_yearly,%v_rb%
+TaskValueSet data_6,rain_yearly,%v_rain_yearly%
+Let,rb,(%v_windgust_maxdaily%+[data_9#windgust_maxdaily]+(abs(%v_windgust_maxdaily%-[data_9#windgust_maxdaily])))/2
+Let,windgust_maxdaily,%v_rb%
+TaskValueSet data_9,windgust_maxdaily,%v_windgust_maxdaily%
+If %v_c1off%=1
+ControllerEnable,1
+Endif
+If %v_c2off%=1
+ControllerEnable,2
+Endif
+If %v_c3off%=1
+ControllerEnable,3
+Endif
+Let,c1off,0
+Let,c2off,0
+Let,c3off,0
 Endon
 On JsonReply* Do
 If %eventpar%=1
