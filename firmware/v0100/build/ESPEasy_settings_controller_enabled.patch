@@ -1,0 +1,11 @@
+--- a/src/src/Helpers/StringParser.cpp
++++ b/src/src/Helpers/StringParser.cpp
+@@ -289,7 +289,7 @@
+           }
+           if (!isHandled && valueName.startsWith(F("settings."))) {  // Task settings values
+             String value;
+-            if (valueName.endsWith(F(".enabled"))) {           // Task state
++            if (valueName.equals(F("settings.enabled"))) {     // Task state
+               value = Settings.TaskDeviceEnabled[taskIndex] ? '1' : '0';
+             } else if (valueName.endsWith(F(".interval"))) {   // Task interval
+               value = Settings.TaskDeviceTimer[taskIndex];
