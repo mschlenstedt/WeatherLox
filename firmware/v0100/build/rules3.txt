@@ -1,26 +1,31 @@
-// V1.1.3_min - 19.10.2026
+// V1.1.5_min - 22.10.2026
 On version3 Do
-Let,rv3,10103
+Let,rv3,10105
 Endon
 On input_1#All Do
 If %eventvalue1%=1
-Let,rain_event,%v_rain_event%+%v_rainbucket%
-Let,rain_hourly,%v_rain_hourly%+%v_rainbucket%
-Let,rain_daily,%v_rain_daily%+%v_rainbucket%
-Let,rain_weekly,%v_rain_weekly%+%v_rainbucket%
-Let,rain_monthly,%v_rain_monthly%+%v_rainbucket%
-Let,rain_yearly,%v_rain_yearly%+%v_rainbucket%
+Let,rainadd,%v_rainbucket%-%v_rainest%
+Let,rainest,0
+Event,addrain=%v_rainadd%
+If %unixtime%<(%v_rainratelast%+600)
+TaskValueSet data_5,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600
+Endif
+Let,rainratelast,%unixtime%
+Endif
+Endon
+On addrain Do
+Let,rain_event,%v_rain_event%+%eventvalue1%
+Let,rain_hourly,%v_rain_hourly%+%eventvalue1%
+Let,rain_daily,%v_rain_daily%+%eventvalue1%
+Let,rain_weekly,%v_rain_weekly%+%eventvalue1%
+Let,rain_monthly,%v_rain_monthly%+%eventvalue1%
+Let,rain_yearly,%v_rain_yearly%+%eventvalue1%
 TaskValueSet data_5,rain_event,%v_rain_event%
 TaskValueSet data_5,rain_hourly,%v_rain_hourly%
 TaskValueSet data_6,rain_daily,%v_rain_daily%
 TaskValueSet data_6,rain_weekly,%v_rain_weekly%
 TaskValueSet data_6,rain_monthly,%v_rain_monthly%
 TaskValueSet data_6,rain_yearly,%v_rain_yearly%
-If %unixtime%<(%v_rainratelast%+600)
-TaskValueSet data_5,rainrate,%v_rainbucket%/(%unixtime%-%v_rainratelast%)*3600
-Endif
-Let,rainratelast,%unixtime%
-Endif
 Endon
 On input_2#All Do
 TaskValueSet data_5,rainstate,%eventvalue1%

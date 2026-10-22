@@ -1,8 +1,8 @@
-// V1.1.4 - 21.10.2026
+// V1.1.5 - 22.10.2026
 
 // Version of Rules 4 for the automatic update (Rules 1) - must match the version in the first line
 On version4 Do
-  Let,rv4,10104
+  Let,rv4,10105
 Endon
  
 // 5sec Tasks / Events
@@ -10,6 +10,17 @@ On Rules#Timer=2 Do
   // Resetting Rainrate if no pulse the last 600s
   If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
       TaskValueSet data_5,rainrate,0
+  Endif
+  // No pulse for 600 s, but the rain sensor still detects rain: back to the sensor estimate
+  If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=1 And [data_5#rainrate]>0.5
+    TaskValueSet data_5,rainrate,0.5
+  Endif
+  // Rain sensor only (rainrate 0.5 mm/h): credit the rain in advance (0.5/720 mm per 5 s), at most one bucket.
+  // The next bucket pulse adds only the rest of the bucket (Rules 3, input_1)
+  If [data_5#rainrate]=0.5 And %v_rainest%<(%v_rainbucket%-0.001)
+    Let,rainadd,0.5/720
+    Let,rainest,%v_rainest%+%v_rainadd%
+    Event,addrain=%v_rainadd%
   Endif
   // Resetting Rain Event
   If %unixtime%>(%v_rainratelast%+3600) And [data_5#rainstate]=0

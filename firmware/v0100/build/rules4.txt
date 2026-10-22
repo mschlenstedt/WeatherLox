@@ -1,10 +1,18 @@
-// V1.1.4_min - 21.10.2026
+// V1.1.5_min - 22.10.2026
 On version4 Do
-Let,rv4,10104
+Let,rv4,10105
 Endon
 On Rules#Timer=2 Do
 If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=0
 TaskValueSet data_5,rainrate,0
+Endif
+If %unixtime%>(%v_rainratelast%+600) And [data_5#rainstate]=1 And [data_5#rainrate]>0.5
+TaskValueSet data_5,rainrate,0.5
+Endif
+If [data_5#rainrate]=0.5 And %v_rainest%<(%v_rainbucket%-0.001)
+Let,rainadd,0.5/720
+Let,rainest,%v_rainest%+%v_rainadd%
+Event,addrain=%v_rainadd%
 Endif
 If %unixtime%>(%v_rainratelast%+3600) And [data_5#rainstate]=0
 TaskValueSet data_5,rain_event,0
