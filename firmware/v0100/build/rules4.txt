@@ -1,6 +1,6 @@
-// V1.1.7_min - 23.10.2026
+// V1.1.8_min - 23.10.2026
 On version4 Do
-Let,rv4,10107
+Let,rv4,10108
 Endon
 On Rules#Timer=2 Do
 If %v_sendok%<1
@@ -40,35 +40,24 @@ Let,ecowittwindspeedmph,[data_7#windspeed]*0.621371
 Let,ecowittwindgustmph,[data_7#windgust_max2m]*0.621371
 Let,ecowittwindspdmph_avg2m,[data_7#windspeed_avg2m]*0.621371
 Let,ecowittwindspdmph_avg10m,[data_7#windspeed_avg10m]*0.621371
+Let,ecowittlast24hrainin,[data_16#rain_24h]/25.4
+Let,ecowittwindgustmph_max24h,[data_16#windgust_max24h]*0.621371
 LetStr,ecowittblock1,"mac=[str#ecowittmac]&PASSKEY=[str#ecowittpasskey]&dateutc=[str#ecowittdateutc]&stationtype=[str#ecowittstationtype]&model=[str#ecowittmodel]&"
 LetStr,ecowittblock2,"twilight=[data_10#twilight]&brightness=[data_10#illuminance]&uv=[data_10#uvi]&solarradiation=[data_10#solarradiation]&sunhours=[data_11#sunduration_daily]&"
 LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_1#humidity]&"
-LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
+LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&last24hrainin=%v_ecowittlast24hrainin%&"
 LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
 LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_15#lightning_daily]&lightning=[data_15#lightning]&"
-LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
-If %v_has24%=1
-Let,ecowittlast24hrainin,[data_16#rain_24h]/25.4
-Let,ecowittwindgustmph_max24h,[data_16#windgust_max24h]*0.621371
-LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&last24hrainin=%v_ecowittlast24hrainin%&"
 LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&windgustmph_max24h=%v_ecowittwindgustmph_max24h%&"
-Endif
 LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%"
 Endif
 Endon
 On Clock#Time=All,**:** Do
-Let,h16,[data_16#settings.valuecount]+0
-Let,hi3,[internal_3#settings.valuecount]+0
-Let,has24,0
-If %v_h16%>0 And %v_hi3%>0
-Let,has24,1
-Endif
-If %v_has24%=1 And %v_i3init%<1
+If %v_i3init%<1
 internal_3.clearsamples
 Let,i3init,1
 Endif
 If %sysmin%=0
-If %v_has24%=1
 Let,rb,%v_rain_hourly%
 Let,gb,0
 If %bootcause%!=1 Or %v_sendok%=1
@@ -79,11 +68,10 @@ TaskValueSet internal_3,int_random,%c_random%(0, 1)
 TaskValueSet internal_3,int_windgust_maxhourly,%v_gb%
 TaskValueSetAndRun internal_3,int_rain_hourly,%v_rb%
 TaskValueSet data_16,windgust_maxhourly,0
-Endif
 TaskValueSet data_5,rain_hourly,0
 Let,rain_hourly,0
 Endif
-If %v_sendok%=1 And %v_has24%=1
+If %v_sendok%=1
 Let,r24,[data_5#rain_hourly]
 Let,g24,[data_16#windgust_maxhourly]
 Let,n24,[internal_3#int_rain_hourly.size]

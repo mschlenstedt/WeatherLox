@@ -1,6 +1,6 @@
-// V1.1.7_min - 23.10.2026
+// V1.1.8_min - 23.10.2026
 On version3 Do
-Let,rv3,10107
+Let,rv3,10108
 Endon
 On input_1#All Do
 If %eventvalue1%=1
@@ -176,10 +176,8 @@ TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
 If [data_7#windspeed]>[data_9#windgust_maxdaily]
 TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
 Endif
-If %v_has24%=1
 If [data_7#windspeed]>[data_16#windgust_maxhourly]
 TaskValueSet data_16,windgust_maxhourly,[data_7#windspeed]
-Endif
 Endif
 If [data_9#windrun_daily]>(%v_windrun_daily%+0.01)
 Let,windrun_daily,[data_9#windrun_daily]

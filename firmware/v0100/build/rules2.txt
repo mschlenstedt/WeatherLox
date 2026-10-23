@@ -1,6 +1,6 @@
-// V1.1.7_min - 23.10.2026
+// V1.1.8_min - 23.10.2026
 On version2 Do
-Let,rv2,10107
+Let,rv2,10108
 Endon
 on WiFi#Connected Do
 LetStr,ecowittstationtype,"WeatherLox"
