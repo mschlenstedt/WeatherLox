@@ -1,8 +1,8 @@
-// V1.1.6 - 22.10.2026
+// V1.1.7 - 23.10.2026
 
 // Version of Rules 3 for the automatic update (Rules 1) - must match the version in the first line
 On version3 Do
-  Let,rv3,10106
+  Let,rv3,10107
 Endon
 
 // Calculate rain amount and rainrate
@@ -229,6 +229,11 @@ On ads1115_1#All Do
   TaskValueSet data_9,beaufort,%c_ms2Bft%([data_7#windspeed_avg2m]/3.6)
   If [data_7#windspeed]>[data_9#windgust_maxdaily] // Setting daily maximum
     TaskValueSet data_9,windgust_maxdaily,[data_7#windspeed]
+  Endif
+  If %v_has24%=1 // Only with the task data_16 (Rules 4, Clock#Time)
+    If [data_7#windspeed]>[data_16#windgust_maxhourly] // Setting hourly maximum (reset every full hour, Rules 4)
+      TaskValueSet data_16,windgust_maxhourly,[data_7#windspeed]
+    Endif
   Endif
   If [data_9#windrun_daily]>(%v_windrun_daily%+0.01) // Warm restart, see addrain
     Let,windrun_daily,[data_9#windrun_daily]

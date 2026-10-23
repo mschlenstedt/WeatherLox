@@ -1,8 +1,8 @@
-// V1.1.6 - 22.10.2026
+// V1.1.7 - 23.10.2026
 
 // Version of Rules 4 for the automatic update (Rules 1) - must match the version in the first line
 On version4 Do
-  Let,rv4,10106
+  Let,rv4,10107
 Endon
  
 // 5sec Tasks / Events
@@ -57,13 +57,20 @@ On Rules#Timer=2 Do
     Let,ecowittwindgustmph,[data_7#windgust_max2m]*0.621371
     Let,ecowittwindspdmph_avg2m,[data_7#windspeed_avg2m]*0.621371
     Let,ecowittwindspdmph_avg10m,[data_7#windspeed_avg10m]*0.621371
+    // sunhours and windgustmph_max24h have no Ecowitt key: names as in FOSHKplugin (with sunhours it does not calculate its own value)
     LetStr,ecowittblock1,"mac=[str#ecowittmac]&PASSKEY=[str#ecowittpasskey]&dateutc=[str#ecowittdateutc]&stationtype=[str#ecowittstationtype]&model=[str#ecowittmodel]&"
-    LetStr,ecowittblock2,"twilight=[data_10#twilight]&brightness=[data_10#illuminance]&uv=[data_10#uvi]&solarradiation=[data_10#solarradiation]&"
+    LetStr,ecowittblock2,"twilight=[data_10#twilight]&brightness=[data_10#illuminance]&uv=[data_10#uvi]&solarradiation=[data_10#solarradiation]&sunhours=[data_11#sunduration_daily]&"
     LetStr,ecowittblock3,"tempf=%v_ecowitttempf%&baromabsin=%v_ecowittbaromabsin%&baromrelin=%v_ecowittbaromrelin%&humidity=[data_1#humidity]&"
     LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&"
     LetStr,ecowittblock5,"hourlyrainin=%v_ecowitthourlyrainin%&dailyrainin=%v_ecowittdailyrainin%&weeklyrainin=%v_ecowittweeklyrainin%&monthlyrainin=%v_ecowittmonthlyrainin%&yearlyrainin=%v_ecowittyearlyrainin%&"
     LetStr,ecowittblock6,"lightning_time=[data_15#lightning_time]&lightning_num=[data_15#lightning_daily]&lightning=[data_15#lightning]&"
     LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&"
+    If %v_has24%=1 // 24 h values only with the tasks internal_3 and data_16 (see Clock#Time)
+      Let,ecowittlast24hrainin,[data_16#rain_24h]/25.4
+      Let,ecowittwindgustmph_max24h,[data_16#windgust_max24h]*0.621371
+      LetStr,ecowittblock4,"srain_piezo=[data_5#rainstate]&rainratein=%v_ecowittrainratein%&eventrainin=%v_ecowitteventrainin%&last24hrainin=%v_ecowittlast24hrainin%&"
+      LetStr,ecowittblock7,"winddir=[data_8#winddir]&winddir_avg2m=[data_8#winddir_avg2m]&winddir_avg10m=[data_8#winddir_avg10m]&windgustmph_max24h=%v_ecowittwindgustmph_max24h%&"
+    Endif
     // Last block without a trailing "&" (FOSHKplugin drops a body that ends with "&")
     LetStr,ecowittblock8,"windspeedmph=%v_ecowittwindspeedmph%&windgustmph=%v_ecowittwindgustmph%&windspdmph_avg2m=%v_ecowittwindspdmph_avg2m%&windspdmph_avg10m=%v_ecowittwindspdmph_avg10m%" 
   Endif
@@ -71,10 +78,59 @@ Endon
 
 // Minutely Tasks / Events
 On Clock#Time=All,**:** Do
+  // The 24 h values need the tasks internal_3 and data_16 (configuration since V1.1.7). The automatic update replaces only the Rules,
+  // so older stations may not have them: then the 24 h values are skipped. A missing task returns an empty value, "+0" makes it 0.
+  Let,h16,[data_16#settings.valuecount]+0
+  Let,hi3,[internal_3#settings.valuecount]+0
+  Let,has24,0
+  If %v_h16%>0 And %v_hi3%>0
+    Let,has24,1
+  Endif
+  // ESPEasy reads internal_3 once at the start: the task values from the RTC memory (last hour after a warm restart)
+  // would count a second time in the hourly statistics. Clear the samples once per start, before the first hourly sample.
+  If %v_has24%=1 And %v_i3init%<1
+    internal_3.clearsamples
+    Let,i3init,1
+  Endif
   // Hourly Tasks / Events
   If %sysmin%=0
+    // Hourly statistics for the 24 h values: rain and highest gust of the hour that just ended.
+    // internal_3 has Stats enabled for all values and runs once per hour, so sample1 is the last full hour.
+    // While data_5/data_16 are blocked after a power loss (Rules 2), [task#value] is empty: take the variable and 0 instead.
+    If %v_has24%=1
+      Let,rb,%v_rain_hourly%
+      Let,gb,0
+      If %bootcause%!=1 Or %v_sendok%=1
+        Let,rb,(%v_rain_hourly%+[data_5#rain_hourly]+(abs(%v_rain_hourly%-[data_5#rain_hourly])))/2 // After a warm restart the variable may still be 0
+        Let,gb,[data_16#windgust_maxhourly]
+      Endif
+      TaskValueSet internal_3,int_random,%c_random%(0, 1) // Force the Statistics to be updated (e.g. several dry hours in a row)
+      TaskValueSet internal_3,int_windgust_maxhourly,%v_gb%
+      TaskValueSetAndRun internal_3,int_rain_hourly,%v_rb%
+      TaskValueSet data_16,windgust_maxhourly,0
+    Endif
     TaskValueSet data_5,rain_hourly,0
     Let,rain_hourly,0
+  Endif
+  // 24 h values: the last 23 full hours (internal_3) plus the current hour, so 23 to 24 hours.
+  // At least the daily value: it covers at most 24 hours and is restored after a power loss, while the Stats are empty after every restart.
+  // ESPEasy has no sum for Stats: sum = average of the last n samples * n
+  If %v_sendok%=1 And %v_has24%=1
+    Let,r24,[data_5#rain_hourly]
+    Let,g24,[data_16#windgust_maxhourly]
+    Let,n24,[internal_3#int_rain_hourly.size]
+    If %v_n24%>0
+      If %v_n24%>23
+        Let,n24,23
+      Endif
+      Let,r24,%v_r24%+[internal_3#int_rain_hourly.avg23]*%v_n24%
+      Let,gb,[internal_3#int_windgust_maxhourly.max23]
+      Let,g24,(%v_g24%+%v_gb%+(abs(%v_g24%-%v_gb%)))/2
+    Endif
+    Let,r24,(%v_r24%+[data_6#rain_daily]+(abs(%v_r24%-[data_6#rain_daily])))/2
+    Let,g24,(%v_g24%+[data_9#windgust_maxdaily]+(abs(%v_g24%-[data_9#windgust_maxdaily])))/2
+    TaskValueSet data_16,rain_24h,%v_r24%
+    TaskValueSet data_16,windgust_max24h,%v_g24%
   Endif
   // Daily, Weekly, Monthly, Yearly Tasks / Events
   If %syssec_d%<59

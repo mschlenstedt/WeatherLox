@@ -1,8 +1,8 @@
-// V1.1.6 - 22.10.2026
+// V1.1.7 - 23.10.2026
 
 // Version of Rules 2 for the automatic update (Rules 1) - must match the version in the first line
 On version2 Do
-  Let,rv2,10106
+  Let,rv2,10107
 Endon
 
 on WiFi#Connected Do
@@ -89,21 +89,21 @@ On blockcontrollers Do
   If %v_ctrlfix%=1
     Let,c1off,0
     Let,cs,0
-    Let,cs,[data_5#settings.controller1.enabled]+[data_6#settings.controller1.enabled]+[data_9#settings.controller1.enabled]+[data_11#settings.controller1.enabled]+[data_15#settings.controller1.enabled] // Empty (0) for a switched off controller
+    Let,cs,[data_5#settings.controller1.enabled]+[data_6#settings.controller1.enabled]+[data_9#settings.controller1.enabled]+[data_11#settings.controller1.enabled]+[data_15#settings.controller1.enabled]+[data_16#settings.controller1.enabled] // Empty (0) for a switched off controller
     If %v_cs%>0
       ControllerDisable,1
       Let,c1off,1
     Endif
     Let,c2off,0
     Let,cs,0
-    Let,cs,[data_5#settings.controller2.enabled]+[data_6#settings.controller2.enabled]+[data_9#settings.controller2.enabled]+[data_11#settings.controller2.enabled]+[data_15#settings.controller2.enabled] // Empty (0) for a switched off controller
+    Let,cs,[data_5#settings.controller2.enabled]+[data_6#settings.controller2.enabled]+[data_9#settings.controller2.enabled]+[data_11#settings.controller2.enabled]+[data_15#settings.controller2.enabled]+[data_16#settings.controller2.enabled] // Empty (0) for a switched off controller
     If %v_cs%>0
       ControllerDisable,2
       Let,c2off,1
     Endif
     Let,c3off,0
     Let,cs,0
-    Let,cs,[data_5#settings.controller3.enabled]+[data_6#settings.controller3.enabled]+[data_9#settings.controller3.enabled]+[data_11#settings.controller3.enabled]+[data_15#settings.controller3.enabled] // Empty (0) for a switched off controller
+    Let,cs,[data_5#settings.controller3.enabled]+[data_6#settings.controller3.enabled]+[data_9#settings.controller3.enabled]+[data_11#settings.controller3.enabled]+[data_15#settings.controller3.enabled]+[data_16#settings.controller3.enabled] // Empty (0) for a switched off controller
     If %v_cs%>0
       ControllerDisable,3
       Let,c3off,1
@@ -126,6 +126,12 @@ Endon
 On TaskInit#data_15 Do
   If %bootcause%=1 And %v_sendok%<1
     TaskDisable,data_15
+  Endif
+Endon
+
+On TaskInit#data_16 Do // 24 h values: their floor is the restored daily value (Rules 4)
+  If %bootcause%=1 And %v_sendok%<1
+    TaskDisable,data_16
   Endif
 Endon
 
@@ -201,6 +207,7 @@ On releasesums Do
   TaskEnable,data_9
   TaskEnable,data_11
   TaskEnable,data_15
+  TaskEnable,data_16
   Let,rb,(%v_rain_event%+[data_5#rain_event]+(abs(%v_rain_event%-[data_5#rain_event])))/2
   Let,rain_event,%v_rb%
   TaskValueSet data_5,rain_event,%v_rain_event%
