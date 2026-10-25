@@ -1,6 +1,6 @@
-// V1.1.8_min - 23.10.2026
+// V1.1.9_min - 25.10.2026
 On version4 Do
-Let,rv4,10108
+Let,rv4,10109
 Endon
 On Rules#Timer=2 Do
 If %v_sendok%<1

@@ -1,8 +1,8 @@
-// V1.1.8 - 23.10.2026
+// V1.1.9 - 25.10.2026
 
 // Version of Rules 3 for the automatic update (Rules 1) - must match the version in the first line
 On version3 Do
-  Let,rv3,10108
+  Let,rv3,10109
 Endon
 
 // Calculate rain amount and rainrate

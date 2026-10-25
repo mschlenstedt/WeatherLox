@@ -1,8 +1,16 @@
-// V1.1.8 - 23.10.2026
+// V1.1.9 - 25.10.2026
+
+// The engine checks every event against all On blocks in order (rules1 to rules4). The task events of the data and
+// internal tasks are not used, so they end here instead of running through all blocks (saves CPU time)
+On data_* Do
+Endon
+
+On internal_* Do
+Endon
 
 // Version of Rules 2 for the automatic update (Rules 1) - must match the version in the first line
 On version2 Do
-  Let,rv2,10108
+  Let,rv2,10109
 Endon
 
 on WiFi#Connected Do
