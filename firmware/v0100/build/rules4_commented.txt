@@ -1,8 +1,8 @@
-// V1.1.9 - 25.10.2026
+// V1.1.10 - 26.10.2026
 
 // Version of Rules 4 for the automatic update (Rules 1) - must match the version in the first line
 On version4 Do
-  Let,rv4,10109
+  Let,rv4,10110
 Endon
  
 // 5sec Tasks / Events
